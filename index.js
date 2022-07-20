@@ -25,34 +25,30 @@ client.on("ready", () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
 
-client.on("messageCreate", async (message) => {
+client.on("messageCreate", async (dMessage) => {
     // return if message is by a bot
-    if (message.author.bot) return;
+    if (dMessage.author.bot) return;
 
     const botIDString = `<@${client.user.id}>`;
 
     // return if message is not a mention of the bot
-    if (message.content.indexOf(botIDString) === -1) return;
+    if (dMessage.content.indexOf(botIDString) === -1) return;
 
-    console.log("got message content", message.content);
+    console.log("got message content", dMessage.content);
 
-    message.react("🐝");
+    dMessage.react("🐝");
 
-    const messageWithoutBotName = message.content.replace(botIDString, "");
+    const message = dMessage.content.replace(botIDString, "");
     
-    const messageRef = await message.reply(`Creating. **${messageWithoutBotName}**`);
-
+    const messageRef = await dMessage.reply(`Creating. **${message}**`);
     const editFunction = lodash.throttle(arg => messageRef.edit(arg), 10000);
 
-    console.log("messageRef", messageRef);
-
     const modelName = "pollinations/preset-frontpage";
-
     const modelNameHumanReadable = modelNameDescription(modelName);
 
 
     const results = runModel({
-        Prompt: messageWithoutBotName
+        Prompt: message
     }, modelName);
 
     for await (const data of results) {
@@ -68,10 +64,10 @@ client.on("messageCreate", async (message) => {
     
         // inside a command, event listener, etc.
         const embeds = images
-            .map(([_filename, image]) => createEmbed(modelNameHumanReadable, messageWithoutBotName, image, contentID));
+            .map(([_filename, image]) => createEmbed(modelNameHumanReadable, message, image, contentID));
 
         editFunction({
-            embeds: embeds
+            embeds
         });
 
     }
