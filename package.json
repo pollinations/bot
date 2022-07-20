@@ -13,6 +13,7 @@
     "@discordjs/rest": "^1.0.0",
     "@pollinations/ipfs": "github:pollinations/pollinations-ipfs",
     "discord.js": "^14.0.3",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "twitter-api-v2": "^1.12.3"
   }
 }

@@ -27,8 +27,8 @@ client.on("ready", () => {
 
 const channels = {
     "dalle-mini": {
-        "model": "pollinations/min-dalle",
-        "promptField": "text",
+        "model": "voodoohop/dalle-playground",
+        "promptField": "prompt",
         "channelId": "999295739727466528"
     },
     "latent-diffusion": {
@@ -54,6 +54,13 @@ client.on("messageCreate", async (dMessage) => {
 
     const channelName = dMessage.channel.name;
 
+
+    const botIDString = `<@${client.user.id}>`;
+
+    // return if message is not a mention of the bot
+    if (dMessage.content.indexOf(botIDString) === -1) return;
+
+
     if (!channelNames.includes(channelName)) {
         await dMessage.react("🚫");
         await dMessage.reply("This channel is not supported. Please use one of the following channels to send your prompt: " + clickableChannelIDs);
@@ -64,11 +71,8 @@ client.on("messageCreate", async (dMessage) => {
     const prettyModelName = modelNameDescription(model);
 
     console.log("selected model", prettyModelName);
-    const botIDString = `<@${client.user.id}>`;
 
-    // return if message is not a mention of the bot
-    if (dMessage.content.indexOf(botIDString) === -1) return;
-
+    
     console.log("got message content", dMessage.content);
 
     dMessage.react("🐝");
@@ -125,5 +129,5 @@ function getImages(output) {
 
     const images = outputEntries.filter(([filename, url]) => (filename.endsWith(".png") || filename.endsWith(".jpg")) && url.length > 0);
 
-    return lodash.reverse(images).slice(-4);
+    return lodash.reverse(images.slice(-4));
 }
