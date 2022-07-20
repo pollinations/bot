@@ -38,17 +38,19 @@ client.on("messageCreate", async (dMessage) => {
 
     dMessage.react("🐝");
 
+  
+    const modelName = "pollinations/majesty-diffusion-cog";
+    const prettyModelName = modelNameDescription(modelName);
+  
     const message = dMessage.content.replace(botIDString, "");
     
-    const messageRef = await dMessage.reply(`Creating. **${message}**`);
-    const editFunction = lodash.throttle(arg => messageRef.edit(arg), 10000);
+    const messageRef = await dMessage.reply(`Creating: **${message}** using model: **${prettyModelName}**.`);
+    const editReply = lodash.throttle(arg => messageRef.edit(arg), 10000);
 
-    const modelName = "pollinations/preset-frontpage";
-    const modelNameHumanReadable = modelNameDescription(modelName);
 
 
     const results = runModel({
-        Prompt: message
+        text_prompt: message
     }, modelName);
 
     for await (const data of results) {
@@ -64,9 +66,9 @@ client.on("messageCreate", async (dMessage) => {
     
         // inside a command, event listener, etc.
         const embeds = images
-            .map(([_filename, image]) => createEmbed(modelNameHumanReadable, message, image, contentID));
+            .map(([_filename, image]) => createEmbed(prettyModelName, message, image, contentID));
 
-        editFunction({
+        editReply({
             embeds
         });
 
@@ -79,7 +81,7 @@ const modelNameDescription = (modelName) =>
     modelName
     .split("/")
     .pop()
-    .replace("-", " ")
+    .replaceAll("-", " ")
     .replace(/\b\w/g, (l) => l.toUpperCase());
 
 function createEmbed(modelNameHumanReadable, messageWithoutBotName, image, contentID) {
