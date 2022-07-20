@@ -25,10 +25,45 @@ client.on("ready", () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
 
+const channels = {
+    "dalle-mini": {
+        "model": "pollinations/min-dalle",
+        "promptField": "text",
+        "channelId": "999295739727466528"
+    },
+    "latent-diffusion": {
+        "model": "pollinations/preset-frontpage",
+        "promptField": "Prompt",
+        "channelId": "999296010025173012"
+    },
+    "majesty-diffusion": {
+        "model": "pollinations/majesty-diffusion-cog",
+        "promptField": "text_prompt",
+        "channelId": "999295785621540914"
+    }
+}
+
+const channelNames = Object.keys(channels);
+
+const clickableChannelIDs = channelNames.map((channelName) => `<#${channels[channelName].channelId}>`).join(", ");
+
+
 client.on("messageCreate", async (dMessage) => {
     // return if message is by a bot
     if (dMessage.author.bot) return;
 
+    const channelName = dMessage.channel.name;
+
+    if (!channelNames.includes(channelName)) {
+        await dMessage.react("🚫");
+        await dMessage.reply("This channel is not supported. Please use one of the following channels to send your prompt: " + clickableChannelIDs);
+        return;
+    }
+
+    const { model, promptField } = channels[channelName];
+    const prettyModelName = modelNameDescription(model);
+
+    console.log("selected model", prettyModelName);
     const botIDString = `<@${client.user.id}>`;
 
     // return if message is not a mention of the bot
@@ -39,9 +74,6 @@ client.on("messageCreate", async (dMessage) => {
     dMessage.react("🐝");
 
   
-    const modelName = "pollinations/majesty-diffusion-cog";
-    const prettyModelName = modelNameDescription(modelName);
-  
     const message = dMessage.content.replace(botIDString, "");
     
     const messageRef = await dMessage.reply(`Creating: **${message}** using model: **${prettyModelName}**.`);
@@ -50,19 +82,15 @@ client.on("messageCreate", async (dMessage) => {
 
 
     const results = runModel({
-        text_prompt: message
-    }, modelName);
+        [promptField]: message
+    }, model);
 
     for await (const data of results) {
 
         const output = data.output;
         const contentID = data[".cid"];
 
-
-        // sometimes the image is an empty string for some reason. skip
-
-        const images = getImages(output);
-
+        const images = getImages(output)
     
         // inside a command, event listener, etc.
         const embeds = images
@@ -97,5 +125,5 @@ function getImages(output) {
 
     const images = outputEntries.filter(([filename, url]) => (filename.endsWith(".png") || filename.endsWith(".jpg")) && url.length > 0);
 
-    return images
+    return images.slice(-4);
 }
