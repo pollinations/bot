@@ -125,5 +125,5 @@ function getImages(output) {
 
     const images = outputEntries.filter(([filename, url]) => (filename.endsWith(".png") || filename.endsWith(".jpg")) && url.length > 0);
 
-    return images.slice(-4);
+    return lodash.reverse(images).slice(-4);
 }
