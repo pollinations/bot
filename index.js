@@ -40,7 +40,7 @@ client.on("messageCreate", async (message) => {
 
     const messageWithoutBotName = message.content.replace(botIDString, "");
     
-    const messageRef = await message.channel.send(`Creating. **${messageWithoutBotName}**`);
+    const messageRef = await message.reply(`Creating. **${messageWithoutBotName}**`);
 
     const editFunction = lodash.throttle(arg => messageRef.edit(arg), 10000);
 
@@ -60,24 +60,20 @@ client.on("messageCreate", async (message) => {
         const output = data.output;
         const contentID = data[".cid"];
 
-        const firstImage = getFirstImage(output);
 
+        // sometimes the image is an empty string for some reason. skip
 
-        // sometimes the iamge is an empty string for some reason. skip
-        if (firstImage && (firstImage.length > 0)) {
-     
-            console.log("firstImage", firstImage);
-            // inside a command, event listener, etc.
-            const embed = new EmbedBuilder()
-                .setDescription(`Model: **${modelNameHumanReadable}**`)
-                .setTitle(messageWithoutBotName)
-                .setImage(firstImage)
-                .setURL(`https://pollinations.ai/p/${contentID}`);
+        const images = getImages(output);
 
-            editFunction({
-                embeds: [embed]
-            });
-        }
+    
+        // inside a command, event listener, etc.
+        const embeds = images
+            .map(([_filename, image]) => createEmbed(modelNameHumanReadable, messageWithoutBotName, image, contentID));
+
+        editFunction({
+            embeds: embeds
+        });
+
     }
 });
 
@@ -90,11 +86,18 @@ const modelNameDescription = (modelName) =>
     .replace("-", " ")
     .replace(/\b\w/g, (l) => l.toUpperCase());
 
-function getFirstImage(output) {
+function createEmbed(modelNameHumanReadable, messageWithoutBotName, image, contentID) {
+    return new EmbedBuilder()
+        .setDescription(`Model: **${modelNameHumanReadable}**`)
+        .setTitle(messageWithoutBotName)
+        .setImage(image)
+        .setURL(`https://pollinations.ai/p/${contentID}`);
+}
+
+function getImages(output) {
     const outputEntries = Object.entries(output);
 
-    const images = outputEntries.filter(([filename, _]) => filename.endsWith(".png") || filename.endsWith(".jpg"));
+    const images = outputEntries.filter(([filename, url]) => (filename.endsWith(".png") || filename.endsWith(".jpg")) && url.length > 0);
 
-    const firstImage = images[0] && images[0][1];
-    return firstImage;
+    return images
 }
