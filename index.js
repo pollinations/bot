@@ -100,11 +100,12 @@ client.on("messageCreate", async (dMessage) => {
         const embeds = images
             .map(([_filename, image]) => createEmbed(prettyModelName, message, image, contentID));
 
-        editReply({
+        await editReply({
             embeds
         });
 
     }
+
 });
 
 client.login(token);
