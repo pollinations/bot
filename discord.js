@@ -30,12 +30,12 @@ client.on("ready", () => {
 
 const channels = {
     "dalle-mini": {
-        "model": "voodoohop/dalle-playground",
+        "model": "614871946825.dkr.ecr.us-east-1.amazonaws.com/voodoohop/dalle-playground",
         "promptField": "prompt",
         "channelId": "999295739727466528"
     },
     "latent-diffusion": {
-        "model": "pollinations/preset-frontpage",
+        "model": "614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/preset-frontpage",
         "promptField": "Prompt",
         "channelId": "999296010025173012"
     },
@@ -87,12 +87,13 @@ client.on("messageCreate", async (dMessage) => {
     const editReply = lodash.throttle(arg => messageRef.edit(arg), 10000);
 
 
-
+    console.log("running model generator", model, { [promptField]: message });
     const results = runModelGenerator({
         [promptField]: message
     }, model);
 
     for await (const data of results) {
+        console.log("got data", data);
 
         const output = data.output;
         const contentID = data[".cid"];
