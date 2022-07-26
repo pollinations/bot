@@ -1,14 +1,17 @@
 import discordjs from "discord.js";
-import {runModel} from "@pollinations/ipfs/awsModelRunner.js";
+import {runModelGenerator} from "@pollinations/ipfs/awsPollenRunner.js";
 import lodash from "lodash";
-
+import credentials from "./credentials.js";
 const {
     Client,
     GatewayIntentBits,
     EmbedBuilder
 } = discordjs;
 
-const token = process.env.DISCORD_TOKEN;
+
+
+
+const token = credentials.discord_token;
 
 // create bot
 
@@ -85,7 +88,7 @@ client.on("messageCreate", async (dMessage) => {
 
 
 
-    const results = runModel({
+    const results = runModelGenerator({
         [promptField]: message
     }, model);
 
