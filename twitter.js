@@ -225,6 +225,7 @@ async function processBios() {
         //console.log("NEXT!!!")
         //await timeline.fetchNext()
     //} while (!timeline.done);
+    setTimeout(processBios, 1000 * 60)
 }
 
 processBios()
