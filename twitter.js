@@ -4,7 +4,7 @@ import runModel from "@pollinations/ipfs/awsPollenRunner.js";
 import fetch from "node-fetch";
 import readline from "readline-sync";
 import pollenStore from "@pollinations/ipfs/pollenStore.js";
-import credentials from "./credentials"
+import credentials from "./credentials.js"
 
 
 
