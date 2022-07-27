@@ -40,7 +40,7 @@ const channels = {
         "channelId": "999296010025173012"
     },
     "majesty-diffusion": {
-        "model": "pollinations/majesty-diffusion-cog",
+        "model": "614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/majesty-diffusion-cog",
         "promptField": "text_prompt",
         "channelId": "999295785621540914"
     }
