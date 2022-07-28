@@ -59,7 +59,7 @@ const userId = user.id;
 const userName = `@${user.username}`;
 
 // get the time 1 hour ago
-const aDayAgo = new Date().getTime() - (1000 * 60 * 60 * 0.3);
+const aDayAgo = new Date().getTime() - (1000 * 60 * 60 * 8);
 
 async function processMentions(lastTime=aDayAgo) {
     console.log("loading mentions from", lastTime)
@@ -108,7 +108,7 @@ async function createImageForMention({author_id, text, tweetText=null, id: tweet
 
     const inputs = {
         Prompt: text,
-        seed: 131,//Math.round(Math.random() * 100000),
+        seed: 132,//Math.round(Math.random() * 100000),
     };
 
     console.log("inputs", inputs);
@@ -186,7 +186,7 @@ async function createBioPortrait(userId) {
     const {data:user} = await twitter.user(userId, {"user.fields":"description"});
     console.log("user", user)
     await createImageForMention({author_id: userId, 
-        text: `Portrait of ${user.name} ${user.description}.`,
+        text: ` Beautiful pixel art portrait of ${user.name} ${user.description}.`,
         tweetText: `"Portrait of ${user.name} ${user.description}". \n\n #myAIportrait`})
 }
 
@@ -228,6 +228,6 @@ async function processBios() {
     setTimeout(() => processBios(), 1000 * 60)
 }
 
-processBios()
+//processBios()
 
 processMentions()   
