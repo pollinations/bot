@@ -59,11 +59,11 @@ const userId = user.id;
 const userName = `@${user.username}`;
 
 // get the time 1 hour ago
-const aDayAgo = new Date().getTime() - (1000 * 60 * 60 * 8);
+const aDayAgo = new Date().getTime() - (1000 * 60 * 60 * 1);
 
 async function processMentions(lastTime=aDayAgo) {
     console.log("loading mentions from", lastTime)
-    const timeBeforeStarting = new Date().getTime();
+    const timeBeforeStarting = new Date().getTime() - 10000;
     // get mentions of our user (pollinations_ai)
     const mentionsData = (await twitter.userMentionTimeline(
         userId,
@@ -90,7 +90,7 @@ async function processMentions(lastTime=aDayAgo) {
         console.error("mentions are empty", mentionsData);
     }
 
-    setTimeout(() => processMentions(timeBeforeStarting), 1000 * 60)
+    setTimeout(() => processMentions(timeBeforeStarting), 1000 * 20)
 }
 
 
@@ -157,9 +157,11 @@ async function createImageForMention({author_id, text, tweetText=null, id: tweet
     
     console.log("tweeting",finalTweetText, {media:{"media_ids":[mediaId]}});
 
-    console.log("replied",await twitter.tweet(`${mentionName} ${tweetText} #aiart #pollinations`, {media:{"media_ids":[mediaId]}}));
-    //twitter.reply( formattedText+" "+url, tweetId);
-    
+    const t = `${mentionName} ${tweetText} #aiart #pollinations`;
+    const payload = {media:{"media_ids":[mediaId]}}
+
+    const response = tweetId ? await twitter.reply(t,tweetId, payload) : await twitter.tweet(t, payload);
+    console.log("tweeted. response: ", response)
     return outputs
 }
 
