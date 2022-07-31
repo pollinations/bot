@@ -59,9 +59,9 @@ const userId = user.id;
 const userName = `@${user.username}`;
 
 // get the time 1 hour ago
-const aDayAgo = new Date().getTime() - (1000 * 60 * 60 * 1);
+const anHourAgo = new Date().getTime() - (1000 * 60 * 60 * 1);
 
-async function processMentions(lastTime=aDayAgo) {
+async function processMentions(lastTime=anHourAgo) {
     console.log("loading mentions from", lastTime)
     const timeBeforeStarting = new Date().getTime() - 10000;
     // get mentions of our user (pollinations_ai)
@@ -108,7 +108,7 @@ async function createImageForMention({author_id, text, tweetText=null, id: tweet
 
     const inputs = {
         Prompt: text,
-        seed: 132,//Math.round(Math.random() * 100000),
+        seed: Math.round(Math.random() * 100000),
     };
 
     console.log("inputs", inputs);
@@ -230,6 +230,6 @@ async function processBios() {
     setTimeout(() => processBios(), 1000 * 60)
 }
 
-//processBios()
+processBios()
 
 processMentions()   
