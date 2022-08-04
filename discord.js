@@ -60,6 +60,8 @@ const clickableChannelIDs = channelNames.map((channelName) => `<#${channels[chan
 
 client.on("messageCreate", async (dMessage) => {
     // return if message is by a bot
+
+
     if (dMessage.author.bot) return;
 
     const channelName = dMessage.channel.name;
@@ -70,9 +72,6 @@ client.on("messageCreate", async (dMessage) => {
 
     // return if message is not a mention of the bot
     if (dMessage.content.indexOf(botIDString) === -1) return;
-    
-    //return if promt is empty
-    if(dMessage.content.replace(botIDString, "").replace(/\s/g, "")) return;
 
 
     if (!channelNames.includes(channelName)) {
