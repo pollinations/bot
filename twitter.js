@@ -59,7 +59,7 @@ const userId = user.id;
 const userName = `@${user.username}`;
 
 // get the time 1 hour ago
-const anHourAgo = new Date().getTime() - (1000 * 60 * 60 * 1);
+const anHourAgo = new Date().getTime() - (1000 * 60 * 60 * 2);
 
 async function processMentions(lastTime=anHourAgo) {
     console.log("loading mentions from", lastTime)
@@ -173,7 +173,7 @@ const {get, set} = pollenStore("bio_tweets");
 // function check if id is in record.json and if not add it to the record.json
 
 async function checkIfIdIsInRecord(id) {
-    console.log("get",id)
+    //console.log("get",id)
     return get(id);
 }
 
@@ -215,7 +215,7 @@ async function processBios() {
             
             // skip heck if follower is in record.json
             if (await checkIfIdIsInRecord(follower.id)) {
-                console.log("skipping", follower.id, count++)
+               // console.log("skipping", follower.id, count++)
                 continue
             };
             //await writeIdToRecord(follower.id)
