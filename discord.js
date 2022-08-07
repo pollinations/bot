@@ -72,7 +72,13 @@ client.on("messageCreate", async (dMessage) => {
 
     // return if message is not a mention of the bot
     if (dMessage.content.indexOf(botIDString) === -1) return;
-
+    
+    //return if promt is empty
+    if(!dMessage.content.replace(botIDString, "").replace(/\s/g, "")) {
+        await dMessage.react("🚫");
+        await dMessage.reply("Please enter a promt.);
+        return;
+    }
 
     if (!channelNames.includes(channelName)) {
         await dMessage.react("🚫");
