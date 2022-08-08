@@ -138,7 +138,7 @@ const modelNameDescription = (modelName) =>
 function createEmbed(modelNameHumanReadable, messageWithoutBotName, image, contentID) {
     return new EmbedBuilder()
         .setDescription(`Model: **${modelNameHumanReadable}**`)
-        .setTitle(messageWithoutBotName)
+        .setTitle(messageWithoutBotName.slice(0,250))
         .setImage(image)
         .setURL(`https://pollinations.ai/p/${contentID}`);
 }
