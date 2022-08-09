@@ -46,7 +46,7 @@ const channels = {
         "numImages": 1
     },
     "disco-diffusion": {
-        "model": "r8.im/nightmareai/disco-diffusion@sha256:cc730cf65f83d7ffed2aa6d47bc9a538b628617be5a4c2db27e7aee6a6391920",
+        "model": "614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/disco-diffusion",
         "promptField": "prompt",
         "channelId": "1003013847562592306",
         "numImages": 1

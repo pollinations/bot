@@ -59,7 +59,7 @@ const userId = user.id;
 const userName = `@${user.username}`;
 
 // get the time 1 hour ago
-const anHourAgo = new Date().getTime() - (1000 * 60 * 60 * 2);
+const anHourAgo = new Date().getTime() - (1000 * 60 * 60 * 4);
 
 async function processMentions(lastTime=anHourAgo) {
     console.log("loading mentions from", lastTime)
