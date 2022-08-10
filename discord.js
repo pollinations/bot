@@ -2,6 +2,9 @@ import discordjs from "discord.js";
 import {runModelGenerator} from "@pollinations/ipfs/awsPollenRunner.js";
 import lodash from "lodash";
 import credentials from "./credentials.js";
+import fetch from "node-fetch";
+import fs from "fs";
+
 const {
     Client,
     GatewayIntentBits,
@@ -50,6 +53,12 @@ const channels = {
         "promptField": "prompt",
         "channelId": "1003013847562592306",
         "numImages": 1
+    },
+    "photo3d": {
+        "model": "614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/adampi",
+        "promptField": "image",
+        "channelId": "1006715462589096026",
+        "numImages": 1
     }
 }
 
@@ -60,7 +69,6 @@ const clickableChannelIDs = channelNames.map((channelName) => `<#${channels[chan
 
 client.on("messageCreate", async (dMessage) => {
     // return if message is by a bot
-
 
     if (dMessage.author.bot) return;
 
@@ -80,6 +88,9 @@ client.on("messageCreate", async (dMessage) => {
         return;
     }
 
+    if (!channels[channelName]) 
+        return;
+
     const { model, promptField } = channels[channelName];
     const prettyModelName = modelNameDescription(model);
 
@@ -90,12 +101,14 @@ client.on("messageCreate", async (dMessage) => {
 
     dMessage.react("🐝");
 
-  
-    const message = dMessage.content.replace(botIDString, "");
+    // check if message has attachments
+    const attachment = checkAttachment(dMessage);
+
+    // message is either the attachment or the message interpreted as the text prompt (without the bot name)
+    const message = attachment || dMessage.content.replace(botIDString, "");
     
     const messageRef = await dMessage.reply(`Creating: **${message}** using model: **${prettyModelName}**.`);
-    const editReply = lodash.throttle(arg => messageRef.edit(arg), 10000);
-
+    const editReply = lodash.throttle((...args) => messageRef.edit(...args), 10000);
 
     console.log("running model generator", model, { [promptField]: message });
     const results = runModelGenerator({
@@ -110,15 +123,27 @@ client.on("messageCreate", async (dMessage) => {
 
         const images = getImages(output).slice(0, channel.numImages || Infinity);
 
-
-    
+        console.log("got images", images);
+        
+        const files = await Promise.all(images
+            .filter(([filename, _url]) => filename.endsWith(".mp4"))
+            .map(async ([filename, url]) => {
+                console.log("fetching url", url);
+                const response = await fetch(url);
+                const buffer = await response.buffer();
+                // write to local filesystem
+                const filePath = `/tmp/${filename}`;
+                fs.writeFileSync(filePath, buffer);  
+                console.log("wrote file", filePath);   
+                return filePath           
+            }))
+        
         // inside a command, event listener, etc.
         const embeds = images
             .map(([_filename, image]) => createEmbed(prettyModelName, message, image, contentID));
 
-        await editReply({
-            embeds
-        });
+        console.log("calling editReply", { embeds, files });
+        await editReply({ embeds, files });
 
     }
 
@@ -135,6 +160,17 @@ const modelNameDescription = (modelName) =>
     .replaceAll("-", " ")
     .replace(/\b\w/g, (l) => l.toUpperCase());
 
+
+function checkAttachment(dMessage, attachment) {
+    if (dMessage.attachments.size > 0) {
+        // get attachment image url
+        const { url } = dMessage.attachments.first();
+        console.log("got attachment with url", url);
+        return url;
+    }
+    return null
+}
+
 function createEmbed(modelNameHumanReadable, messageWithoutBotName, image, contentID) {
     return new EmbedBuilder()
         .setDescription(`Model: **${modelNameHumanReadable}**`)
@@ -146,7 +182,7 @@ function createEmbed(modelNameHumanReadable, messageWithoutBotName, image, conte
 function getImages(output) {
     const outputEntries = Object.entries(output);
 
-    const images = outputEntries.filter(([filename, url]) => (filename.endsWith(".png") || filename.endsWith(".jpg")) && url.length > 0);
+    const images = outputEntries.filter(([filename, url]) => (filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".mp4")) && url.length > 0);
 
     return lodash.reverse(images.slice(-4));
 }
