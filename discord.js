@@ -57,7 +57,7 @@ const channels = {
     "photo3d": {
         "model": "614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/adampi",
         "promptField": "image",
-        "channelId": "1006715462589096026",
+        "channelId": "1007030609060823082",
         "numImages": 1
     }
 }
