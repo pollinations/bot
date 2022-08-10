@@ -2,9 +2,13 @@
   "name": "@pollinations/bot",
   "version": "0.1.0",
   "description": "Pollinations' Discord Bot",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/discord/index.js",
+    "dev": "nodemon src/discord/index.ts",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prettier": "prettier --config .prettierrc --write src/**/*.ts",
+    "lint": "eslint src/**/*.ts"
   },
   "author": "",
   "license": "ISC",
@@ -13,6 +17,7 @@
     "@discordjs/rest": "^1.0.0",
     "@pollinations/ipfs": "github:pollinations/pollinations-ipfs",
     "discord.js": "^14.0.3",
+    "dotenv": "^16.0.1",
     "install": "^0.13.0",
     "lodash": "^4.17.21",
     "node-fetch": "^2.6.7",
@@ -21,5 +26,18 @@
     "social-post-api": "^1.0.20",
     "twitter-api-sdk": "^1.1.0",
     "twitter-api-v2": "^1.12.3"
+  },
+  "devDependencies": {
+    "@tsconfig/node16-strictest-esm": "^1.0.3",
+    "@types/lodash": "^4.14.182",
+    "@typescript-eslint/eslint-plugin": "^5.33.0",
+    "@typescript-eslint/parser": "^5.33.0",
+    "eslint": "^8.21.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "nodemon": "^2.0.19",
+    "prettier": "^2.7.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.7.4"
   }
 }

@@ -1,0 +1,15 @@
+{
+  "extends": "@tsconfig/node16-strictest-esm/tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "checkJs": false
+  },
+  "ts-node": {
+    "esm": true,
+    "files": true,
+    "transpileOnly": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}
