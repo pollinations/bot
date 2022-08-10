@@ -13,6 +13,7 @@
     "@discordjs/rest": "^1.0.0",
     "@pollinations/ipfs": "github:pollinations/pollinations-ipfs",
     "discord.js": "^14.0.3",
+    "gifify": "^2.4.3",
     "install": "^0.13.0",
     "lodash": "^4.17.21",
     "node-fetch": "^2.6.7",
