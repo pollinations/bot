@@ -52,6 +52,12 @@ const CHANNEL_CONFIG = {
     promptField: 'image',
     channelId: '1007030609060823082',
     numImages: 1
+  },
+  'retrieval-diffusion': {
+    model: '614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/latent-diffusion-400m',
+    promptField: 'prompts',
+    channelId: '1009168983578124449',
+    numImages: 1
   }
 };
 type ChannelName = keyof typeof CHANNEL_CONFIG;
