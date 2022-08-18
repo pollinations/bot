@@ -107,14 +107,14 @@ async function createImageForMention({author_id, text, tweetText=null, id: tweet
     const formattedText = text;
 
     const inputs = {
-        Prompt: text,
+        prompt: text,
         seed: Math.round(Math.random() * 100000),
     };
 
     console.log("inputs", inputs);
 
     const outputs = await runModel(inputs, 
-        "614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/preset-frontpage"
+        "614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/latent-diffusion-400m"
     );
 
     //console.log("outputs", outputs[".cid"], ,Object.entries(outputs.output))
@@ -188,8 +188,9 @@ async function createBioPortrait(userId) {
     const {data:user} = await twitter.user(userId, {"user.fields":"description"});
     console.log("user", user)
     await createImageForMention({author_id: userId, 
-        text: ` Beautiful pixel art portrait of ${user.name} ${user.description}.`,
-        tweetText: `"Portrait of ${user.name} ${user.description}". \n\n #myAIportrait`})
+    //    text: ` ${user.name} ${user.description}. Vibrant conceptual art.`,
+    text: `a stunning portrait photo of ${user.name} ${user.description}. By Steve McCurry `,
+        tweetText: `"Portrait of ${user.name} ${user.description}". \n\nFollow @pollinations_ai to receive your #myAIportrait`})
 }
 
 //processMentions()   
@@ -221,8 +222,14 @@ async function processBios() {
             //await writeIdToRecord(follower.id)
             //const response = readline.question("create portrait?")
             //if (response ==="yes")
-            await createBioPortrait(follower.id)
-            await writeIdToRecord(follower.id)
+            try {
+                await createBioPortrait(follower.id)
+                await writeIdToRecord(follower.id)
+            } catch (e) {
+                console.error("error", e)
+                // print stack trace
+                console.error(e.stack)
+            }
         }
         //console.log("NEXT!!!")
         //await timeline.fetchNext()
@@ -232,4 +239,4 @@ async function processBios() {
 
 processBios()
 
-processMentions()   
+processMentions()  
