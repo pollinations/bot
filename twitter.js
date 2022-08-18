@@ -5,7 +5,7 @@ import fetch from "node-fetch";
 import readline from "readline-sync";
 import pollenStore from "@pollinations/ipfs/pollenStore.js";
 import credentials from "./credentials.js"
-
+import sleep from "await-sleep";
 
 
 
@@ -229,6 +229,7 @@ async function processBios() {
                 console.error("error", e)
                 // print stack trace
                 console.error(e.stack)
+                await sleep(1000 * 20)
             }
         }
         //console.log("NEXT!!!")
