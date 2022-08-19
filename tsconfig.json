@@ -8,7 +8,8 @@
   "ts-node": {
     "esm": true,
     "files": true,
-    "transpileOnly": true
+    "transpileOnly": true,
+    "experimentalSpecifierResolution": "node"
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
