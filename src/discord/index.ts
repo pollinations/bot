@@ -21,7 +21,7 @@ EVENTS.forEach((event) => {
     event.execute(client, ...args);
   });
 });
-client.ws.status;
+
 client.once('ready', () => {
   console.log(`Logged in as ${client.user?.tag}!`);
 });
