@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, ApplicationCommandType, EmbedBuilder, Message } from 'discord.js';
+import { ApplicationCommandOptionType, ApplicationCommandType, EmbedBuilder } from 'discord.js';
 import { getPollensThatHavePromptParam } from '../util/getPollensThatHavePromptParam';
 import { POLLENS } from '../config/pollens';
 import type { Command } from '../config/commands';
@@ -6,6 +6,8 @@ import { runModelGenerator } from '@pollinations/ipfs/awsPollenRunner.js';
 import { extractMediaFromIpfsResponse } from '../util/extractMediaFromIpfsResponse';
 import { downloadFiles } from '../util/downloadFiles';
 import lodash from 'lodash';
+import { POLLINATORS } from '../config/pollinators';
+
 const ImagineCommand: Command = {
   data: {
     name: 'imagine',
@@ -23,9 +25,9 @@ const ImagineCommand: Command = {
         required: false,
         description: 'the model to use',
         type: ApplicationCommandOptionType.String,
-        choices: getPollensThatHavePromptParam(POLLENS).map(({ name, displayName }) => ({
-          name: displayName || name,
-          value: name
+        choices: getPollensThatHavePromptParam(POLLENS).map(({ id, model, displayName }) => ({
+          name: displayName || model,
+          value: id
         }))
       }
     ]
@@ -33,17 +35,21 @@ const ImagineCommand: Command = {
   execute: async (interaction) => {
     const prompt = interaction.options.getString('prompt')!;
     const pollenId = interaction.options.getString('model')!;
-    const pollen = POLLENS.find((model) => model.name === pollenId)!;
+
+    // #TODO: can be transformed to external fetch for available pollinator that runs this pollen
+    const pollinator = POLLINATORS.find((pollinator) => pollinator.pollenId === pollenId)!;
+
+    const pollen = POLLENS.find((p) => p.id === pollenId)!;
 
     await interaction.reply(`Creating: **${prompt}** using model: **${pollen.displayName}**`);
 
-    const promptParam = pollen.params.find((p) => p.isPrimaryTextPrompt)!;
+    const promptParam = pollen.params.find((p) => p.type === 'text' && p.isPrimaryTextPrompt)!;
 
     const results = runModelGenerator(
       {
         [promptParam.name]: prompt
       },
-      pollen.computeUrl
+      pollinator.url
     );
 
     const editReply = lodash.throttle(interaction.editReply.bind(interaction), 10000);
