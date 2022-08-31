@@ -8,10 +8,12 @@ import {
 } from 'discord.js';
 import type { Command } from '../config/commands';
 import { PollenParam, POLLENS } from '../config/pollens';
-import { POLLINATORS } from '../config/pollinators';
 import { executePollen } from '../shared/executePollen';
 import { isPrimaryPromptParam } from '../util/promptParamHandling';
-
+import lodash from 'lodash';
+import { parseModalFieldsAsParams } from '../util/discord.js/parseModalFieldsAsParams';
+import { createEmbed } from '../util/discord.js/createEmbed';
+import botTexts from '../config/botTexts';
 const MODAL_ID = 'parameter-prototype';
 
 const ModalCommand: Command = {
@@ -83,15 +85,20 @@ const ModalCommand: Command = {
       });
     if (!submitted) return null;
 
-    // get pollinator, extract params, execute pollen
-    const pollinator = POLLINATORS.find((pollinator) => pollinator.pollenId === pollenId)!;
-    const params = submitted.fields.fields.reduce((curr, input) => {
-      curr[input.customId] = input.value;
-      return curr;
-    }, {} as Record<string, string>);
+    const params = parseModalFieldsAsParams(submitted, availableParams);
 
     submitted.reply('Your request has been accepted!');
-    return executePollen(pollen, pollinator, params, interaction);
+
+    const result = await interaction!.channel!.send(botTexts.onExecutionStart(prompt, pollen.displayName));
+    const updateResultMessage = lodash.throttle(result.edit.bind(result), 10000);
+
+    for await (const data of executePollen(pollen, params)) {
+      const { files, images, ipfs } = data;
+      const contentID = ipfs['.cid'];
+      const embeds = images.map(([_filename, image]) => createEmbed(pollen.displayName!, prompt, image, contentID));
+      updateResultMessage({ embeds, files });
+    }
+    return;
   }
 };
 

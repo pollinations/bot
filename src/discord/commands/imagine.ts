@@ -2,8 +2,10 @@ import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js
 import { getPollensThatHavePromptParam, isPrimaryPromptParam } from '../util/promptParamHandling';
 import { POLLENS } from '../config/pollens';
 import type { Command } from '../config/commands';
-import { POLLINATORS } from '../config/pollinators';
 import { executePollen } from '../shared/executePollen';
+import { createEmbed } from '../util/discord.js/createEmbed';
+import lodash from 'lodash';
+import botTexts from '../config/botTexts';
 
 const ImagineCommand: Command = {
   data: {
@@ -33,15 +35,20 @@ const ImagineCommand: Command = {
     const prompt = interaction.options.getString('prompt')!;
     const pollenId = interaction.options.getString('model')!;
 
-    // #TODO: can be transformed to external fetch for available pollinator that runs this pollen
-    const pollinator = POLLINATORS.find((pollinator) => pollinator.pollenId === pollenId)!;
-
     const pollen = POLLENS.find((p) => p.id === pollenId)!;
     const promptParam = pollen.params.find(isPrimaryPromptParam)!;
     const params = {
       [promptParam.name]: prompt
     };
-    executePollen(pollen, pollinator, params, interaction);
+    await interaction.reply(botTexts.onExecutionStart(prompt, pollen.displayName));
+    const updateResultMessage = lodash.throttle(interaction.editReply.bind(interaction), 10000);
+
+    for await (const data of executePollen(pollen, params)) {
+      const { files, images, ipfs } = data;
+      const contentID = ipfs['.cid'];
+      const embeds = images.map(([_filename, image]) => createEmbed(pollen.displayName!, prompt, image, contentID));
+      updateResultMessage({ embeds, files });
+    }
   }
 };
 
