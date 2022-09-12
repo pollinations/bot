@@ -1,16 +1,17 @@
-import { ApplicationCommandOptionType, ApplicationCommandType, EmbedBuilder, Message } from 'discord.js';
-import { getPollensThatHavePromptParam } from '../util/getPollensThatHavePromptParam';
+import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
+import { getPollensThatHavePromptParam, isPrimaryPromptParam } from '../util/promptParamHandling';
 import { POLLENS } from '../config/pollens';
 import type { Command } from '../config/commands';
-import { runModelGenerator } from '@pollinations/ipfs/awsPollenRunner.js';
-import { extractMediaFromIpfsResponse } from '../util/extractMediaFromIpfsResponse';
-import { downloadFiles } from '../util/downloadFiles';
+import { executePollen } from '../shared/executePollen';
+import { createEmbed } from '../util/discord.js/createEmbed';
 import lodash from 'lodash';
+import botTexts from '../config/botTexts';
+
 const ImagineCommand: Command = {
   data: {
     name: 'imagine',
     type: ApplicationCommandType.ChatInput,
-    description: 'imagine a based  on a text prompt',
+    description: 'imagine an image based on a text prompt',
     options: [
       {
         name: 'prompt',
@@ -23,9 +24,9 @@ const ImagineCommand: Command = {
         required: false,
         description: 'the model to use',
         type: ApplicationCommandOptionType.String,
-        choices: getPollensThatHavePromptParam(POLLENS).map(({ name, displayName }) => ({
-          name: displayName || name,
-          value: name
+        choices: getPollensThatHavePromptParam(POLLENS).map(({ id, model, displayName }) => ({
+          name: displayName || model,
+          value: id
         }))
       }
     ]
@@ -33,43 +34,22 @@ const ImagineCommand: Command = {
   execute: async (interaction) => {
     const prompt = interaction.options.getString('prompt')!;
     const pollenId = interaction.options.getString('model')!;
-    const pollen = POLLENS.find((model) => model.name === pollenId)!;
 
-    await interaction.reply(`Creating: **${prompt}** using model: **${pollen.displayName}**`);
+    const pollen = POLLENS.find((p) => p.id === pollenId)!;
+    const promptParam = pollen.params.find(isPrimaryPromptParam)!;
+    const params = {
+      [promptParam.name]: prompt
+    };
+    await interaction.reply(botTexts.onExecutionStart(prompt, pollen.displayName));
+    const updateResultMessage = lodash.throttle(interaction.editReply.bind(interaction), 10000);
 
-    const promptParam = pollen.params.find((p) => p.isPrimaryTextPrompt)!;
-
-    const results = runModelGenerator(
-      {
-        [promptParam.name]: prompt
-      },
-      pollen.computeUrl
-    );
-
-    const editReply = lodash.throttle(interaction.editReply.bind(interaction), 10000);
-
-    for await (const data of results) {
-      console.log('got data', data);
-
-      const output = data.output;
-      const contentID = data['.cid'];
-
-      const images = extractMediaFromIpfsResponse(output).slice(0, 1);
-      console.log('got images', images);
-
-      const files = await downloadFiles(images, '.mp4');
+    for await (const data of executePollen(pollen, params)) {
+      const { files, images, ipfs } = data;
+      const contentID = ipfs['.cid'];
       const embeds = images.map(([_filename, image]) => createEmbed(pollen.displayName!, prompt, image, contentID));
-      await editReply({ embeds, files });
+      updateResultMessage({ embeds, files });
     }
   }
 };
 
 export default ImagineCommand;
-
-function createEmbed(modelNameHumanReadable: string, messageWithoutBotName: string, image: string, contentID: string) {
-  return new EmbedBuilder()
-    .setDescription(`Model: **${modelNameHumanReadable}**`)
-    .setTitle(messageWithoutBotName.slice(0, 250))
-    .setImage(image)
-    .setURL(`https://pollinations.ai/p/${contentID}`);
-}

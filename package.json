@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "description": "Pollinations' Discord Bot",
   "scripts": {
-    "start": "node dist/discord/index.js",
-    "dev": "nodemon src/discord/index.ts",
+    "start": "node -r dotenv/config dist/discord/index.js dotenv_config_path=.env.production.local",
+    "dev": "nodemon -r dotenv/config src/discord/index.ts dotenv_config_path=.env.local",
     "build": "tsc",
     "deploy-commands": "ts-node --experimental-specifier-resolution=node src/discord/deployCommands.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
