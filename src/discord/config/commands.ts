@@ -1,7 +1,5 @@
 import type { APIApplicationCommand, ChatInputCommandInteraction } from 'discord.js';
-import ImagineCommand from '../commands/imagine';
-import ModalCommand from '../commands/modal';
-import TestCommand from '../commands/test';
+import CreateCommand from '../commands/create';
 
 // https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
 export interface Command {
@@ -10,4 +8,4 @@ export interface Command {
 }
 
 // Register all commands to be used here
-export const COMMANDS: Command[] = [ImagineCommand, TestCommand, ModalCommand];
+export const COMMANDS: Command[] = [CreateCommand];

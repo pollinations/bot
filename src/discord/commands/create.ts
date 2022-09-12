@@ -7,11 +7,11 @@ import { createEmbed } from '../util/discord.js/createEmbed';
 import lodash from 'lodash';
 import botTexts from '../config/botTexts';
 
-const ImagineCommand: Command = {
+const CreateCommand: Command = {
   data: {
-    name: 'imagine',
+    name: 'create',
     type: ApplicationCommandType.ChatInput,
-    description: 'imagine an image based on a text prompt',
+    description: 'Imagine an image based on a text prompt using a specific pollen',
     options: [
       {
         name: 'prompt',
@@ -22,7 +22,7 @@ const ImagineCommand: Command = {
       {
         name: 'model',
         required: false,
-        description: 'the model to use',
+        description: 'the pollen to use',
         type: ApplicationCommandOptionType.String,
         choices: getPollensThatHavePromptParam(POLLENS).map(({ id, model, displayName }) => ({
           name: displayName || model,
@@ -52,4 +52,4 @@ const ImagineCommand: Command = {
   }
 };
 
-export default ImagineCommand;
+export default CreateCommand;
