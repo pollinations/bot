@@ -41,6 +41,7 @@ export type PollenParamValue = string | number | boolean | undefined; // is ipfs
 interface PollenOutputDescriptor {
   type: PrimitiveType | AssetType;
   description?: string;
+  numImages?: number; // temporary property
 }
 
 export interface PollenDefinition {
@@ -193,7 +194,50 @@ export const POLLENS: PollenDefinition[] = [
         type: 'image'
       }
     ]
+  },
+  {
+    id: 'retrieval-diffusion',
+    model: 'retrieval-diffusion',
+    displayName: 'Retrieval Diffusion',
+    params: [
+      {
+        name: 'prompt',
+        type: 'text',
+        defaultValue: 'A giant Spaceship flying above a farmland',
+        isPrimaryTextPrompt: true,
+        required: true
+      }
+    ],
+    outputs: [
+      {
+        type: 'image'
+      }
+    ]
+  },
+  {
+    id: 'stable-diffusion',
+    model: 'stable-diffusion',
+    displayName: 'Stable Diffusion',
+    params: [
+      {
+        name: 'prompts',
+        type: 'text',
+        defaultValue: 'A giant Spaceship flying above a farmland',
+        isPrimaryTextPrompt: true,
+        required: true
+      }
+    ],
+    outputs: [
+      {
+        type: 'image',
+        numImages: 4
+      },
+      {
+        type: 'video'
+      }
+    ]
   }
+
   // {
   //   name: 'photo3d',
   //   displayName: 'Photo3D',

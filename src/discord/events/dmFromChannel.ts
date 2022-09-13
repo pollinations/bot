@@ -21,7 +21,6 @@ const DmFromChannelEvent: EventConfig<'messageCreate'> = {
 
     // return if message is not a mention of the bot
     const botIDString = `<@${client.user?.id}>`;
-    console.log(botIDString, dMessage.content, dMessage.content.indexOf(botIDString));
     if (dMessage.content.indexOf(botIDString) === -1) return;
 
     const channel = dMessage.channel as GuildTextBasedChannel;

@@ -39,6 +39,12 @@ export const CHANNEL_CONFIG = {
     promptField: 'prompts',
     channelId: '1009168983578124449',
     numImages: 1
+  },
+  'stable-diffusion': {
+    model: '614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/stable-diffusion-private',
+    promptField: 'prompts',
+    channelId: '1011335962007175198',
+    numImages: 4
   }
 };
 

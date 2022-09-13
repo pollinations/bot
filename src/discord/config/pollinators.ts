@@ -20,5 +20,13 @@ export const POLLINATORS: Pollinator[] = [
   {
     pollenId: 'disco-diffusion',
     url: '614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/disco-diffusion'
+  },
+  {
+    pollenId: 'retrieval-diffusion',
+    url: '614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/latent-diffusion-400m'
+  },
+  {
+    pollenId: 'stable-diffusion',
+    url: '614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/stable-diffusion-private'
   }
 ];

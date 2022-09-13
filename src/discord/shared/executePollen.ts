@@ -11,8 +11,8 @@ export async function* executePollen(pollen: PollenDefinition, params: Record<st
     console.log('got data', data);
 
     const output = data.output;
-
-    const images = extractMediaFromIpfsResponse(output).slice(0, 1);
+    const imageOutputDefinition = pollen.outputs.find((o) => o.type === 'image');
+    const images = extractMediaFromIpfsResponse(output).slice(0, imageOutputDefinition?.numImages || 1);
     console.log('got images', images);
 
     const files = await downloadFiles(images, '.mp4');
