@@ -5,8 +5,7 @@
     "outDir": "dist",
     "checkJs": false,
     "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "esModuleInterop": true
+    "moduleResolution": "NodeNext"
   },
   "ts-node": {
     "esm": true,
