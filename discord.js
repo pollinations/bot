@@ -33,8 +33,8 @@ client.on("ready", () => {
 
 const channels = {
     "dalle-mini": {
-        "model": "614871946825.dkr.ecr.us-east-1.amazonaws.com/voodoohop/dalle-playground",
-        "promptField": "prompt",
+        "model": "614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/min-dalle",
+        "promptField": "Prompt",
         "channelId": "999295739727466528"
     },
     "latent-diffusion": {
@@ -62,9 +62,15 @@ const channels = {
     },
     'retrieval-diffusion': {
       model: '614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/latent-diffusion-400m',
-      promptField: 'prompts',
+      promptField: 'prompt',
       channelId: '1009168983578124449',
       numImages: 1
+    },
+    'stable-diffusion': {
+      model: '614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/stable-diffusion-private',
+      promptField: 'prompts',
+      channelId: '1011335962007175198',
+      numImages: 4
     }
 }
 
@@ -113,7 +119,7 @@ client.on("messageCreate", async (dMessage) => {
     // message is either the attachment or the message interpreted as the text prompt (without the bot name)
     const message = attachment || dMessage.content.replace(botIDString, "");
     
-    const messageRef = await dMessage.reply(`Creating: **${message}** using model: **${prettyModelName}**.`);
+    const messageRef = await dMessage.reply(`Creating: **${message}**`);
     const editReply = lodash.throttle((...args) => messageRef.edit(...args), 10000);
 
     console.log("running model generator", model, { [promptField]: message });
@@ -186,6 +192,8 @@ function createEmbed(modelNameHumanReadable, messageWithoutBotName, image, conte
 }
 
 function getImages(output) {
+    if (!output)
+	return []
     const outputEntries = Object.entries(output);
 
     const images = outputEntries.filter(([filename, url]) => (filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".mp4")) && url.length > 0);
