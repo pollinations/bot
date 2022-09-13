@@ -3,7 +3,8 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
-    "checkJs": false
+    "checkJs": false,
+    "esModuleInterop": true
   },
   "ts-node": {
     "esm": true,
