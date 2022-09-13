@@ -12,7 +12,6 @@ const body = COMMANDS.map((config) => config.data);
 const deployCommands = async () => {
   try {
     console.log('Started refreshing application (/) commands.');
-    console.log(DISCORD_TOKEN);
 
     await new REST({ version: '10' })
       .setToken(DISCORD_TOKEN)
