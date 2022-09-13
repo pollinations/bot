@@ -19,6 +19,11 @@ const DmFromChannelEvent: EventConfig<'messageCreate'> = {
     // return if message is by a bot
     if (dMessage.author.bot) return;
 
+    // return if message is not a mention of the bot
+    const botIDString = `<@${client.user?.id}>`;
+    console.log(botIDString, dMessage.content, dMessage.content.indexOf(botIDString));
+    if (dMessage.content.indexOf(botIDString) === -1) return;
+
     const channel = dMessage.channel as GuildTextBasedChannel;
     const channelNameUnvalidated = (channel as GuildTextBasedChannel).name;
 
@@ -33,11 +38,6 @@ const DmFromChannelEvent: EventConfig<'messageCreate'> = {
 
     const channelName = channelNameUnvalidated as ChannelName;
     const config = CHANNEL_CONFIG[channelName] as ChannelConfig;
-
-    const botIDString = `<@${client.user?.id}>`;
-
-    // return if message is not a mention of the bot
-    if (dMessage.content.indexOf(botIDString) === -1) return;
 
     const { model, promptField } = CHANNEL_CONFIG[channelName]!;
 
