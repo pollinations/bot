@@ -1,10 +1,10 @@
 import { EmbedBuilder, GuildTextBasedChannel, Message } from 'discord.js';
-import { ChannelConfig, ChannelName, CHANNEL_CONFIG } from '../config/channels';
+import { ChannelConfig, ChannelName, CHANNEL_CONFIG } from '../config/channels.js';
 import lodash from 'lodash';
 import { runModelGenerator } from '@pollinations/ipfs/awsPollenRunner.js';
-import type { EventConfig } from '../config/events';
-import { extractMediaFromIpfsResponse } from '../util/extractMediaFromIpfsResponse';
-import { downloadFiles } from '../util/downloadFiles';
+import type { EventConfig } from '../config/events.js';
+import { extractMediaFromIpfsResponse } from '../util/extractMediaFromIpfsResponse.js';
+import { downloadFiles } from '../util/downloadFiles.js';
 
 const channelNames = Object.keys(CHANNEL_CONFIG);
 

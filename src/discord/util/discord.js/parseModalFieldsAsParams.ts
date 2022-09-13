@@ -1,5 +1,5 @@
 import type { ModalSubmitInteraction } from 'discord.js';
-import type { PollenParam, PollenParamValue } from '../../config/pollens';
+import type { PollenParam, PollenParamValue } from '../../config/pollens.js';
 
 export const parseModalFieldsAsParams = (submitted: ModalSubmitInteraction, availableParams: PollenParam[]) => {
   return submitted.fields.fields.reduce((curr, input) => {

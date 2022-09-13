@@ -1,5 +1,5 @@
 import type { APIApplicationCommand, ChatInputCommandInteraction } from 'discord.js';
-import CreateCommand from '../commands/create';
+import CreateCommand from '../commands/create.js';
 
 // https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
 export interface Command {

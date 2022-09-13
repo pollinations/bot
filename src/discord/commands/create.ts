@@ -1,11 +1,11 @@
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
-import { getPollensThatHavePromptParam, isPrimaryPromptParam } from '../util/promptParamHandling';
-import { POLLENS } from '../config/pollens';
-import type { Command } from '../config/commands';
-import { executePollen } from '../shared/executePollen';
-import { createEmbed } from '../util/discord.js/createEmbed';
+import { getPollensThatHavePromptParam, isPrimaryPromptParam } from '../util/promptParamHandling.js';
+import { POLLENS } from '../config/pollens.js';
+import type { Command } from '../config/commands.js';
+import { executePollen } from '../shared/executePollen.js';
+import { createEmbed } from '../util/discord.js/createEmbed.js';
 import lodash from 'lodash';
-import botTexts from '../config/botTexts';
+import botTexts from '../config/botTexts.js';
 
 const CreateCommand: Command = {
   data: {

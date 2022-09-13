@@ -1,5 +1,5 @@
-import { COMMANDS } from '../config/commands';
-import type { EventConfig } from '../config/events';
+import { COMMANDS } from '../config/commands.js';
+import type { EventConfig } from '../config/events.js';
 
 const InteractionCreateEvent: EventConfig<'interactionCreate'> = {
   debugName: 'InteractionCreateEvent',

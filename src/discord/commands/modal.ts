@@ -6,14 +6,14 @@ import {
   TextInputBuilder,
   TextInputStyle
 } from 'discord.js';
-import type { Command } from '../config/commands';
-import { PollenParam, POLLENS } from '../config/pollens';
-import { executePollen } from '../shared/executePollen';
-import { isPrimaryPromptParam } from '../util/promptParamHandling';
+import type { Command } from '../config/commands.js';
+import { PollenParam, POLLENS } from '../config/pollens.js';
+import { executePollen } from '../shared/executePollen.js';
+import { isPrimaryPromptParam } from '../util/promptParamHandling.js';
 import lodash from 'lodash';
-import { parseModalFieldsAsParams } from '../util/discord.js/parseModalFieldsAsParams';
-import { createEmbed } from '../util/discord.js/createEmbed';
-import botTexts from '../config/botTexts';
+import { parseModalFieldsAsParams } from '../util/discord.js/parseModalFieldsAsParams.js';
+import { createEmbed } from '../util/discord.js/createEmbed.js';
+import botTexts from '../config/botTexts.js';
 const MODAL_ID = 'parameter-prototype';
 
 const ModalCommand: Command = {

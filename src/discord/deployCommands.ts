@@ -1,6 +1,6 @@
 import { REST, Routes } from 'discord.js';
 import 'dotenv/config';
-import { COMMANDS } from './config/commands';
+import { COMMANDS } from './config/commands.js';
 
 // CREDENTIALS
 const DISCORD_TOKEN = process.env['DISCORD_TOKEN'] || 'no token specified in .env file';

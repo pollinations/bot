@@ -1,4 +1,4 @@
-import type { Pollinator } from './pollinators';
+import type { Pollinator } from './pollinators.js';
 
 type AssetType = 'image' | 'video' | '3d'; // IPFS Media Assets
 

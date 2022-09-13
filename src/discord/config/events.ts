@@ -1,6 +1,6 @@
 import type { Client, ClientEvents } from 'discord.js';
-import DmFromChannelEvent from '../events/dmFromChannel';
-import InteractionCreateEvent from '../events/interactionCreate';
+import DmFromChannelEvent from '../events/dmFromChannel.js';
+import InteractionCreateEvent from '../events/interactionCreate.js';
 
 export interface EventConfig<K extends keyof ClientEvents> {
   debugName: string;

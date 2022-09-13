@@ -1,8 +1,8 @@
 import { runModelGenerator } from '@pollinations/ipfs/awsPollenRunner.js';
-import type { PollenDefinition, PollenParamValue } from '../config/pollens';
-import { POLLINATORS } from '../config/pollinators';
-import { downloadFiles } from '../util/downloadFiles';
-import { extractMediaFromIpfsResponse } from '../util/extractMediaFromIpfsResponse';
+import type { PollenDefinition, PollenParamValue } from '../config/pollens.js';
+import { POLLINATORS } from '../config/pollinators.js';
+import { downloadFiles } from '../util/downloadFiles.js';
+import { extractMediaFromIpfsResponse } from '../util/extractMediaFromIpfsResponse.js';
 
 export async function* executePollen(pollen: PollenDefinition, params: Record<string, PollenParamValue>) {
   const pollinator = POLLINATORS.find((pollinator) => pollinator.pollenId === pollen.id)!;

@@ -1,5 +1,5 @@
 import { ApplicationCommandType } from 'discord.js';
-import type { Command } from '../config/commands';
+import type { Command } from '../config/commands.js';
 
 const TestCommand: Command = {
   data: {

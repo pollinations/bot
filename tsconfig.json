@@ -4,6 +4,8 @@
     "rootDir": "src",
     "outDir": "dist",
     "checkJs": false,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "esModuleInterop": true
   },
   "ts-node": {
