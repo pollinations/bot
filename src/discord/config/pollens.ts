@@ -1,10 +1,8 @@
-import type { Pollinator } from './pollinators.js';
-
 type AssetType = 'image' | 'video' | '3d'; // IPFS Media Assets
 
 type PrimitiveType = 'text' | 'number' | 'boolean';
 
-export type PollenParam = {
+export type PollenParamDefinition = {
   name: string;
   displayName?: string;
   description?: string;
@@ -23,6 +21,9 @@ export type PollenParam = {
       min?: number;
       max?: number;
       isPrimaryTextPrompt?: boolean;
+    }
+  | {
+      type: 'boolean';
     }
   | {
       type: 'image';
@@ -50,20 +51,12 @@ export interface PollenDefinition {
   version?: string;
   displayName: string; // user-friendly name
   description?: string; // brief summary of how this pollen can be used
-  params: PollenParam[]; // Set of allowed parameters for this pollen
+  params: PollenParamDefinition[]; // Set of allowed parameters for this pollen
   outputs: PollenOutputDescriptor[];
   prototype?: boolean; // Flag that I use to pick a model for testing prototypes; feel free to remove it or add your own
 }
 
 // a set of parameters used to run a specified pollen
-export interface Pollination {
-  pollen: PollenDefinition;
-  pollinator: Pollinator;
-  params: Record<string, PollenParamValue>;
-  outputId: string; // contentId
-  date: number;
-  user: string;
-}
 export const POLLENS: PollenDefinition[] = [
   {
     id: 'dalle-mini',
@@ -148,6 +141,13 @@ export const POLLENS: PollenDefinition[] = [
         displayName: 'Width',
         type: 'number',
         xOrder: 5
+      },
+      {
+        name: 'Dummy_Toggle',
+        description: 'A dummy boolean paramter',
+        displayName: 'Dummy_Toggle',
+        type: 'boolean',
+        xOrder: 6
       }
     ],
     outputs: [
