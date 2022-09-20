@@ -7,7 +7,7 @@ import {
   TextInputStyle
 } from 'discord.js';
 import type { Command } from '../config/commands.js';
-import { PollenParam, POLLENS } from '../config/pollens.js';
+import { PollenParamDefinition, POLLENS } from '../config/pollens.js';
 import { executePollen } from '../shared/executePollen.js';
 import { isPrimaryPromptParam } from '../util/promptParamHandling.js';
 import lodash from 'lodash';
@@ -104,6 +104,6 @@ const ModalCommand: Command = {
 
 export default ModalCommand;
 
-const isTextBasedParam = (a: PollenParam) => ['number', 'text'].includes(a.type);
-const sortParamsAscByXOrder = (a: PollenParam, b: PollenParam) =>
+const isTextBasedParam = (a: PollenParamDefinition) => ['number', 'text'].includes(a.type);
+const sortParamsAscByXOrder = (a: PollenParamDefinition, b: PollenParamDefinition) =>
   (typeof a.xOrder === 'number' ? a.xOrder : Infinity) - (typeof b.xOrder === 'number' ? b.xOrder : Infinity);
