@@ -4,7 +4,6 @@ import { PollenParamValue, POLLENS } from '../../../config/pollens.js';
 import type { Pollination } from '../index.js';
 import { buildPollinationConfigEmbed } from './buildPollinationConfigEmbed.js';
 import { parsePollenParamValue } from './parsePollenParamValue.js';
-import { replyWithError } from './replyWithError.js';
 
 export const toggleOrSetParam = async (
   interaction: ChatInputCommandInteraction,
@@ -15,7 +14,7 @@ export const toggleOrSetParam = async (
   const userId = interaction.user.id;
   const { currentSession, currentSummary } = interaction.client.store.users.get(userId);
 
-  if (!currentSession) return replyWithError(ERROR_MESSAGES.NO_SESSION(), interaction);
+  if (!currentSession) return interaction.reply({ content: ERROR_MESSAGES.NO_SESSION(), ephemeral: true });
   // get pollen
   const pollen = POLLENS.find((p) => p.id === currentSession.pollenId)!;
 
@@ -60,4 +59,5 @@ export const toggleOrSetParam = async (
     interaction.client.store.users.update(userId, { currentSummary: summary });
     currentSummary?.edit({ content: 'Configuration has moved away from this channel' });
   }
+  return;
 };

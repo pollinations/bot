@@ -2,7 +2,6 @@ import { ApplicationCommandOptionType, EmbedBuilder } from 'discord.js';
 import { ERROR_MESSAGES } from '../../../config/botTexts.js';
 import type { Subcommand } from '../../../config/commands.js';
 import { PollenParamValue, POLLENS } from '../../../config/pollens.js';
-import { replyWithError } from '../shared/replyWithError.js';
 import lodash from 'lodash';
 import { executePollen } from '../../../shared/executePollen.js';
 import { buildPollinationConfigEmbed } from '../shared/buildPollinationConfigEmbed.js';
@@ -20,7 +19,8 @@ const PollinationRunCommand: Subcommand = {
     const { currentSession, currentSummary } = interaction.client.store.users.get(userId);
     console.log('run', userId);
 
-    if (!currentSession || !currentSummary) return replyWithError(ERROR_MESSAGES.NO_SESSION(), interaction);
+    if (!currentSession || !currentSummary)
+      return interaction.reply({ content: ERROR_MESSAGES.NO_SESSION(), ephemeral: true });
 
     // get pollen
     const pollen = POLLENS.find((p) => p.id === currentSession.pollenId)!;
@@ -47,6 +47,7 @@ const PollinationRunCommand: Subcommand = {
         updateResultMessage({ embeds: [summaryEmbed, ...resultEmbeds], files });
       }
       currentSession.status = 'done';
+      return;
     } catch (error) {
       console.log(error);
       return interaction.channel!.send({ content: 'Error executing pollen' });
