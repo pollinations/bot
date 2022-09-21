@@ -22,7 +22,7 @@ const createDefaultState = (): UserState => {
 
 export const createStore = () => {
   const sessions = new Map();
-  const get = (userId: string) => sessions.get(userId) || createDefaultState();
+  const get = (userId: string) => ({ ...(sessions.get(userId) || createDefaultState()) });
   const update = (userId: string, partialState: Partial<UserState>) => {
     const state = get(userId);
     sessions.set(userId, { ...state, ...partialState });

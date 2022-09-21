@@ -52,8 +52,8 @@ const PollinationInitCommand: Subcommand = {
     );
   },
   execute: async (interaction) => {
+    const { logger } = interaction;
     const userId = interaction.user.id;
-    console.log('init', userId);
 
     // get command options
     const pollenId = interaction.options.getString('model')!;
@@ -61,15 +61,22 @@ const PollinationInitCommand: Subcommand = {
     const promptUserInput = interaction.options.getString('prompt')!;
 
     // get pollen definition
-    const pollen = POLLENS.find((p) => p.id === pollenId)!;
+    const pollen = POLLENS.find((p) => p.id === pollenId);
+    if (!pollen) {
+      // this should (almost) never happenl, since the autocomplete should prevent it
+      logger.warn(`Invalid pollen id: ${pollenId}`, { pollenId });
+      return interaction.reply({ content: `'${pollenId} is not a valid pollen id`, ephemeral: true });
+    }
+    logger.debug(`Initializing pollen: ${pollenId} (${pollen.displayName})`, { pollenId });
 
     // check if configuration of previous can be used for this FOR THIS POLLEN
     const userState = interaction.client.store.users.get(userId);
 
-    let prevPollination = userState.prevSessions[pollenId];
-    if (prevPollination && prevPollination.pollenId !== pollenId) prevPollination = undefined;
+    let prevPollinationForPollen = userState.prevSessions[pollenId];
+    logger.debug(`${prevPollinationForPollen ? 'Valid' : 'No'} previous configuration found`);
 
     // initialize params for pollination
+    logger.debug(`Initializing param set, reset: ${resetFlag ? 'true' : 'false'}`);
     const params: PollenParam[] = pollen.params.map((param) => {
       if (resetFlag)
         return {
@@ -77,13 +84,14 @@ const PollinationInitCommand: Subcommand = {
           value: param.defaultValue
         };
       else {
-        const prevParam = prevPollination?.params.find((p) => p.name === param.name);
+        const prevParam = prevPollinationForPollen?.params.find((p) => p.name === param.name);
         return {
           name: param.name,
           value: prevParam?.value || param.defaultValue
         };
       }
     });
+    logger.debug(`Param set initialized \n${params.map((p) => `${p.name}: ${p.value}`).join('\n')}`);
 
     // handle prompt param input from user
     let textPromptHistory = userState.textPromptHistory;
@@ -96,25 +104,26 @@ const PollinationInitCommand: Subcommand = {
         // add to history
         if (!textPromptHistory.includes(promptUserInput) && promptUserInput.length <= 100) {
           textPromptHistory = [...textPromptHistory.slice(-9), promptUserInput];
+          logger.debug(`Added prompt to user's prompt history: '${promptUserInput}'`, { prompt: promptUserInput });
         }
       }
     }
-
-    interaction.reply(
+    //@ts-ignore
+    delete interaction.logger;
+    await interaction.reply(
       `Initializing pollination configuration. You can \`/set\` or \`/toggle\` params, or  re-\`/init\` or \`/run\` the pollination.`
     );
 
     // initialize pollination object
     const pollination: Pollination = { userId, pollenId, params, createdAt: Date.now(), status: 'initialized' };
 
-    // build embed with default param settings
     const { summaryEmbed } = buildPollinationConfigEmbed(pollination);
     const summaryMessage = await interaction.channel!.send({
       embeds: [summaryEmbed]
     });
+    logger.debug('Sent pollination configuration embed');
 
     // save session
-    userState.textPromptHistory = userState.textPromptHistory.slice(-3).concat(promptUserInput);
     interaction.client.store.users.update(userId, {
       currentSession: pollination,
       currentSummary: summaryMessage,

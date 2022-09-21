@@ -2,9 +2,9 @@ import { EmbedBuilder, GuildTextBasedChannel, Message } from 'discord.js';
 import { ChannelConfig, ChannelName, CHANNEL_CONFIG } from '../config/channels.js';
 import lodash from 'lodash';
 import { runModelGenerator } from '@pollinations/ipfs/awsPollenRunner.js';
-import type { EventConfig } from '../config/events.js';
 import { extractMediaFromIpfsResponse } from '../util/extractMediaFromIpfsResponse.js';
 import { downloadFiles } from '../util/downloadFiles.js';
+import type { EventConfig } from '../types/misc.js';
 
 const channelNames = Object.keys(CHANNEL_CONFIG);
 
@@ -15,12 +15,12 @@ const clickableChannelIDs = channelNames
 const DmFromChannelEvent: EventConfig<'messageCreate'> = {
   debugName: 'DmFromChannelEvent',
   on: 'messageCreate',
-  execute: async (client, dMessage) => {
+  execute: async (dMessage) => {
     // return if message is by a bot
     if (dMessage.author.bot) return;
 
     // return if message is not a mention of the bot
-    const botIDString = `<@${client.user?.id}>`;
+    const botIDString = `<@${dMessage.client.user?.id}>`;
     if (dMessage.content.indexOf(botIDString) === -1) return;
 
     const channel = dMessage.channel as GuildTextBasedChannel;

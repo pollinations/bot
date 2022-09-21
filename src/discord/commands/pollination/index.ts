@@ -1,4 +1,5 @@
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
+import { ERROR_MESSAGES } from '../../config/botTexts.js';
 import type { Command } from '../../config/commands.js';
 import type { PollenParamValue } from '../../config/pollens.js';
 import PollinationInitCommand from './subcommands/init.js';
@@ -41,23 +42,33 @@ const PollinationCommand: Command = {
     ]
   },
   autoCompleteHandler: async (interaction) => {
+    const { logger } = interaction;
     const subCommandName = interaction.options.getSubcommand();
-    if (subCommandName === 'init') PollinationInitCommand.autoCompleteHandler?.(interaction);
-    else if (subCommandName === 'set') PollinationParamSetCommand.autoCompleteHandler?.(interaction);
-    else if (subCommandName === 'toggle') PollinationToggleCommand.autoCompleteHandler?.(interaction);
+    logger.info(`Executing autocomplete for subcommand: '${subCommandName}'`, { subCommandName });
+    if (subCommandName === 'init') return PollinationInitCommand.autoCompleteHandler?.(interaction);
+    else if (subCommandName === 'set') return PollinationParamSetCommand.autoCompleteHandler?.(interaction);
+    else if (subCommandName === 'toggle') return PollinationToggleCommand.autoCompleteHandler?.(interaction);
+    else {
+      interaction.respond([]);
+      logger.error(`Invalid autocomplete sub command: ${subCommandName}`, { subCommandName });
+    }
   },
   execute: async (interaction) => {
+    const { logger } = interaction;
     // return if not in channel
     if (!interaction.inGuild() || !interaction.channel)
       return interaction.reply({ content: 'This command can only be used in a server', ephemeral: true });
-
     const subCommandName = interaction.options.getSubcommand();
-    if (subCommandName === 'init') PollinationInitCommand.execute(interaction);
-    else if (subCommandName === 'set') PollinationParamSetCommand.execute(interaction);
-    else if (subCommandName === 'toggle') PollinationToggleCommand.execute(interaction);
-    else if (subCommandName === 'run') PollinationRunCommand.execute(interaction);
 
-    return;
+    logger.info(`Executing sub command: '${subCommandName}'`, { subCommandName });
+    if (subCommandName === 'init') return PollinationInitCommand.execute(interaction);
+    else if (subCommandName === 'set') return PollinationParamSetCommand.execute(interaction);
+    else if (subCommandName === 'toggle') return PollinationToggleCommand.execute(interaction);
+    else if (subCommandName === 'run') return PollinationRunCommand.execute(interaction);
+    else {
+      interaction.reply({ content: ERROR_MESSAGES.SERVER_ERROR(), ephemeral: true });
+      logger.error(`Invalid sub command: ${subCommandName}`, { subCommandName });
+    }
   }
 };
 
