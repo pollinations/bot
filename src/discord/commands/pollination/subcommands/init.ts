@@ -65,9 +65,16 @@ const PollinationInitCommand: Subcommand = {
     if (!pollen) {
       // this should (almost) never happenl, since the autocomplete should prevent it
       logger.warn(`Invalid pollen id: ${pollenId}`, { pollenId });
-      return interaction.reply({ content: `'${pollenId} is not a valid pollen id`, ephemeral: true });
+      interaction.reply({ content: `'${pollenId} is not a valid pollen id`, ephemeral: true });
+      return false;
     }
     logger.debug(`Initializing pollen: ${pollenId} (${pollen.displayName})`, { pollenId });
+
+    // send initial response
+    await interaction.reply({
+      content: 'Initializing pollen, please wait...',
+      ephemeral: true
+    });
 
     // check if configuration of previous can be used for this FOR THIS POLLEN
     const userState = interaction.client.store.users.get(userId);
@@ -84,6 +91,7 @@ const PollinationInitCommand: Subcommand = {
           value: param.defaultValue
         };
       else {
+        // try to find previous value for this param
         const prevParam = prevPollinationForPollen?.params.find((p) => p.name === param.name);
         return {
           name: param.name,
@@ -108,28 +116,40 @@ const PollinationInitCommand: Subcommand = {
         }
       }
     }
-    //@ts-ignore
-    delete interaction.logger;
-    await interaction.reply(
-      `Initializing pollination configuration. You can \`/set\` or \`/toggle\` params, or  re-\`/init\` or \`/run\` the pollination.`
-    );
 
     // initialize pollination object
     const pollination: Pollination = { userId, pollenId, params, createdAt: Date.now(), status: 'initialized' };
 
+    // send response
     const { summaryEmbed } = buildPollinationConfigEmbed(pollination);
-    const summaryMessage = await interaction.channel!.send({
-      embeds: [summaryEmbed]
-    });
+    const messagePayload = {
+      embeds: [summaryEmbed],
+      content: `You can \`/set\` or \`/toggle\` params, or  re-\`/init\` or \`/run\` the pollination.`
+    };
+
+    const { currentSummary } = userState;
+    let newSummary;
+    if (currentSummary)
+      if (currentSummary.channelId === interaction.channelId) newSummary = await currentSummary.edit(messagePayload);
+      else {
+        // await currentSummary.pinned && currentSummary.unpin();
+        await currentSummary.delete();
+        newSummary = await interaction.channel!.send(messagePayload);
+      }
+    else newSummary = await interaction.channel!.send(messagePayload);
+
+    // await newSummary.pin();
     logger.debug('Sent pollination configuration embed');
 
     // save session
+    userState.prevSessions[pollenId] = pollination;
     interaction.client.store.users.update(userId, {
+      ...userState,
       currentSession: pollination,
-      currentSummary: summaryMessage,
+      currentSummary: newSummary,
       textPromptHistory
     });
-    return;
+    return true;
   }
 };
 

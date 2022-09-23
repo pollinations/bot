@@ -42,13 +42,16 @@ EVENTS.forEach((event) => {
     });
     try {
       // Execute the event handler
-      await event.execute(...args);
+      if (await event.execute(...args)) {
+        interaction.logger.info('Event executed successfully');
+      }
     } catch (error) {
       // Handle uncaught exceptions in event handlers
       interaction.logger.error(`Unhandled exception while executing event: on:${event.on} => ${event.debugName}`, {
         error
       });
-      if (interaction.isRepliable()) interaction.reply({ content: ERROR_MESSAGES.SERVER_ERROR(), ephemeral: true });
+      if (interaction.isRepliable() && !interaction.replied)
+        interaction.reply({ content: ERROR_MESSAGES.SERVER_ERROR(), ephemeral: true });
     }
   });
   logger.info(`Registered custom event '${event.debugName}' for discord.js event '${event.on}'`);

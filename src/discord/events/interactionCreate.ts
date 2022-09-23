@@ -1,4 +1,3 @@
-import type { AutocompleteInteraction, ChatInputCommandInteraction } from 'discord.js';
 import { ERROR_MESSAGES } from '../config/botTexts.js';
 import { COMMANDS } from '../config/commands.js';
 import type { EventConfig } from '../types/misc.js';
@@ -9,7 +8,10 @@ const InteractionCreateEvent: EventConfig<'interactionCreate'> = {
   on: 'interactionCreate',
   execute: async (interaction) => {
     const { logger } = interaction;
-
+    if (interaction.user.bot) {
+      logger.debug('Ignoring interaction from bot');
+      return;
+    }
     if (!interaction.isCommand()) {
       logger.debug('Interaction is not a command, ignoring');
       return;
@@ -24,8 +26,8 @@ const InteractionCreateEvent: EventConfig<'interactionCreate'> = {
       return;
     }
     logger.info(`Executing command: '${commandName}'${interaction.isAutocomplete() ? ' [autoComplete]' : ''}`);
-    if (interaction.isChatInputCommand()) return await command.execute(interaction);
-    else if (interaction.isAutocomplete()) return await command.autoCompleteHandler?.(interaction);
+    if (interaction.isChatInputCommand()) return command.execute(interaction);
+    else if (interaction.isAutocomplete()) return command.autoCompleteHandler?.(interaction);
     else {
       logger.debug('Interaction is neither ChatInputCommand, nor AutoComplete, ignoring');
       return;
