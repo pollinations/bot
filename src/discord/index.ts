@@ -34,22 +34,27 @@ EVENTS.forEach((event) => {
     // create child logger and add it to interaction
     // child logger now contains default metadata for interaction
     const interaction: Interaction = args[0];
-    interaction.logger = logger.child({
-      userId: interaction.user?.id,
-      guildId: interaction.guild?.id || 'DM',
-      channelId: interaction.channelId,
-      type: interaction.type
-    });
+    interaction.logger = logger.child({ interactionId: interaction.id });
+    interaction.logger.info(
+      {
+        interactionId: interaction.id,
+        userId: interaction.user?.id,
+        guildId: interaction.guild?.id || 'DM',
+        channelId: interaction.channelId,
+        type: interaction.type
+      },
+      `Incoming interaction: ${interaction.id}`
+    );
     try {
       // Execute the event handler
       if (await event.execute(...args)) {
         interaction.logger.info('Event executed successfully');
       }
-    } catch (error) {
+    } catch (err) {
       // Handle uncaught exceptions in event handlers
-      interaction.logger.error(`Unhandled exception while executing event: on:${event.on} => ${event.debugName}`, {
-        error
-      });
+      const msg = `Unhandled exception while executing event: on:${event.on} => ${event.debugName}`;
+      interaction.logger.error(err, msg);
+      //
       if (interaction.isRepliable() && !interaction.replied)
         interaction.reply({ content: ERROR_MESSAGES.SERVER_ERROR(), ephemeral: true });
     }

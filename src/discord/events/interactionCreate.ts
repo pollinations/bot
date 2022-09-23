@@ -18,14 +18,19 @@ const InteractionCreateEvent: EventConfig<'interactionCreate'> = {
     }
 
     const { commandName } = interaction;
+    const isAutocomplete = interaction.isAutocomplete();
+    const subCommandName =
+      (isAutocomplete || interaction.isChatInputCommand()) && interaction.options.getSubcommand(false);
+    interaction.logger.info({ commandName, subCommandName, isAutocomplete }, `Executing command: '${commandName}'`);
+
     const command = COMMANDS.find((c) => c.data.name === commandName);
     if (!command) {
       // this should never happen as commands need to be registered with discord before they can be used
       interaction.reply({ content: ERROR_MESSAGES.SERVER_ERROR(), ephemeral: true });
-      logger.error(`Requested command found with name ${commandName}, which is not registered`, { commandName });
+      logger.error(`Requested command found with name ${commandName}, which is not registered`);
       return;
     }
-    logger.info(`Executing command: '${commandName}'${interaction.isAutocomplete() ? ' [autoComplete]' : ''}`);
+
     if (interaction.isChatInputCommand()) return command.execute(interaction);
     else if (interaction.isAutocomplete()) return command.autoCompleteHandler?.(interaction);
     else {

@@ -1,7 +1,6 @@
 import 'discord.js';
-import type { Logger } from 'winston';
 import type { Store } from '../store.js';
-
+import { Logger } from 'pino';
 declare module 'discord.js' {
   export interface Client {
     store: Store;

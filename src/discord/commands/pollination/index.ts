@@ -44,13 +44,12 @@ const PollinationCommand: Command = {
   autoCompleteHandler: async (interaction) => {
     const { logger } = interaction;
     const subCommandName = interaction.options.getSubcommand();
-    logger.info(`Executing autocomplete for subcommand: '${subCommandName}'`, { subCommandName });
     if (subCommandName === 'init') return PollinationInitCommand.autoCompleteHandler?.(interaction);
     else if (subCommandName === 'set') return PollinationParamSetCommand.autoCompleteHandler?.(interaction);
     else if (subCommandName === 'toggle') return PollinationToggleCommand.autoCompleteHandler?.(interaction);
     else {
       interaction.respond([]);
-      logger.error(`Invalid autocomplete sub command: ${subCommandName}`, { subCommandName });
+      logger.error(new Error(`Invalid autocomplete sub command: ${subCommandName}`));
     }
   },
   execute: async (interaction) => {
@@ -60,14 +59,13 @@ const PollinationCommand: Command = {
       return interaction.reply({ content: 'This command can only be used in a server', ephemeral: true });
     const subCommandName = interaction.options.getSubcommand();
 
-    logger.info(`Executing sub command: '${subCommandName}'`, { subCommandName });
     if (subCommandName === 'init') return PollinationInitCommand.execute(interaction);
     else if (subCommandName === 'set') return PollinationParamSetCommand.execute(interaction);
     else if (subCommandName === 'toggle') return PollinationToggleCommand.execute(interaction);
     else if (subCommandName === 'run') return PollinationRunCommand.execute(interaction);
     else {
       interaction.reply({ content: ERROR_MESSAGES.SERVER_ERROR(), ephemeral: true });
-      logger.error(`Invalid sub command: ${subCommandName}`, { subCommandName });
+      logger.error(new Error(`Invalid sub command: ${subCommandName}`));
     }
   }
 };

@@ -64,11 +64,11 @@ const PollinationInitCommand: Subcommand = {
     const pollen = POLLENS.find((p) => p.id === pollenId);
     if (!pollen) {
       // this should (almost) never happenl, since the autocomplete should prevent it
-      logger.warn(`Invalid pollen id: ${pollenId}`, { pollenId });
+      logger.warn({ pollenId }, `Invalid pollen id: ${pollenId}`);
       interaction.reply({ content: `'${pollenId} is not a valid pollen id`, ephemeral: true });
       return false;
     }
-    logger.debug(`Initializing pollen: ${pollenId} (${pollen.displayName})`, { pollenId });
+    logger.debug({ pollenId }, `Initializing pollen: ${pollenId} (${pollen.displayName})`);
 
     // send initial response
     await interaction.reply({
@@ -99,7 +99,7 @@ const PollinationInitCommand: Subcommand = {
         };
       }
     });
-    logger.debug(`Param set initialized \n${params.map((p) => `${p.name}: ${p.value}`).join('\n')}`);
+    logger.debug({ params }, `Param set initialized`);
 
     // handle prompt param input from user
     let textPromptHistory = userState.textPromptHistory;
@@ -112,7 +112,7 @@ const PollinationInitCommand: Subcommand = {
         // add to history
         if (!textPromptHistory.includes(promptUserInput) && promptUserInput.length <= 100) {
           textPromptHistory = [...textPromptHistory.slice(-9), promptUserInput];
-          logger.debug(`Added prompt to user's prompt history: '${promptUserInput}'`, { prompt: promptUserInput });
+          logger.debug({ prompt: promptUserInput }, `Added prompt to user's prompt history'`);
         }
       }
     }
@@ -132,13 +132,13 @@ const PollinationInitCommand: Subcommand = {
     if (currentSummary)
       if (currentSummary.channelId === interaction.channelId) newSummary = await currentSummary.edit(messagePayload);
       else {
-        // await currentSummary.pinned && currentSummary.unpin();
+        // await (currentSummary.pinned && currentSummary.unpin());
         await currentSummary.delete();
         newSummary = await interaction.channel!.send(messagePayload);
       }
     else newSummary = await interaction.channel!.send(messagePayload);
 
-    // await newSummary.pin();
+    await newSummary.pin();
     logger.debug('Sent pollination configuration embed');
 
     // save session
