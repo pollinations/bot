@@ -1,4 +1,4 @@
-import { ERROR_MESSAGES } from '../config/botTexts.js';
+import { exitInteraction, EXIT_REASONS } from '../commands/pollination/shared/errorHandler.js';
 import { COMMANDS } from '../config/commands.js';
 import type { EventConfig } from '../types/misc.js';
 
@@ -12,7 +12,7 @@ const InteractionCreateEvent: EventConfig<'interactionCreate'> = {
       logger.debug('Ignoring interaction from bot');
       return;
     }
-    if (!interaction.isCommand()) {
+    if (!(interaction.isAutocomplete() || interaction.isChatInputCommand())) {
       logger.debug('Interaction is not a command, ignoring');
       return;
     }
@@ -21,19 +21,23 @@ const InteractionCreateEvent: EventConfig<'interactionCreate'> = {
     const isAutocomplete = interaction.isAutocomplete();
     const subCommandName =
       (isAutocomplete || interaction.isChatInputCommand()) && interaction.options.getSubcommand(false);
-    interaction.logger.info({ commandName, subCommandName, isAutocomplete }, `Executing command: '${commandName}'`);
 
     const command = COMMANDS.find((c) => c.data.name === commandName);
-    if (!command) {
-      // this should never happen as commands need to be registered with discord before they can be used
-      interaction.reply({ content: ERROR_MESSAGES.SERVER_ERROR(), ephemeral: true });
-      logger.error(`Requested command found with name ${commandName}, which is not registered`);
-      return;
-    }
 
-    if (interaction.isChatInputCommand()) return command.execute(interaction);
-    else if (interaction.isAutocomplete()) return command.autoCompleteHandler?.(interaction);
-    else {
+    // this should never happen as commands need to be registered with discord before they can be used
+
+    if (!command) return exitInteraction(interaction, EXIT_REASONS.INVALID_COMMAND(commandName), 'error');
+
+    if (interaction.isChatInputCommand()) {
+      interaction.logger.info({ commandName, subCommandName }, `Executing command: '${subCommandName || commandName}'`);
+      return command.execute(interaction);
+    } else if (isAutocomplete) {
+      interaction.logger.info(
+        { commandName, subCommandName },
+        `Executing autocomplete for command: '${subCommandName || commandName}'`
+      );
+      return command.autoCompleteHandler?.(interaction);
+    } else {
       logger.debug('Interaction is neither ChatInputCommand, nor AutoComplete, ignoring');
       return;
     }

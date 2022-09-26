@@ -7,7 +7,7 @@ import type { EventConfig } from './types/misc.js';
 // events
 import DmFromChannelEvent from './events/dmFromChannel.js';
 import InteractionCreateEvent from './events/interactionCreate.js';
-import { ERROR_MESSAGES } from './config/botTexts.js';
+import { exitInteraction, EXIT_REASONS } from './commands/pollination/shared/errorHandler.js';
 
 // CONFIGURATION
 // declare all events to be registered here
@@ -47,16 +47,13 @@ EVENTS.forEach((event) => {
     );
     try {
       // Execute the event handler
-      if (await event.execute(...args)) {
+      if ((await event.execute(...args)) === true) {
         interaction.logger.info('Event executed successfully');
       }
     } catch (err) {
       // Handle uncaught exceptions in event handlers
       const msg = `Unhandled exception while executing event: on:${event.on} => ${event.debugName}`;
-      interaction.logger.error(err, msg);
-      //
-      if (interaction.isRepliable() && !interaction.replied)
-        interaction.reply({ content: ERROR_MESSAGES.SERVER_ERROR(), ephemeral: true });
+      exitInteraction(interaction, EXIT_REASONS.UNEXPECTED_EXCEPTION(err, msg), 'error');
     }
   });
   logger.info(`Registered custom event '${event.debugName}' for discord.js event '${event.on}'`);

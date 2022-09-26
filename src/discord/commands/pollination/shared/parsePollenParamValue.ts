@@ -1,5 +1,5 @@
-import { ERROR_MESSAGES } from '../../../config/botTexts.js';
 import type { PollenParamDefinition, PollenParamValue } from '../../../config/pollens.js';
+import { EXIT_REASONS } from './errorHandler.js';
 
 export const parsePollenParamValue = (value: PollenParamValue, paramDefintion: PollenParamDefinition) => {
   let parsedValue;
@@ -13,16 +13,18 @@ export const parsePollenParamValue = (value: PollenParamValue, paramDefintion: P
     } else if (value === 'false' || value == 0) {
       parsedValue = false;
     } else {
-      throw ERROR_MESSAGES.INVALID_BOOLEAN_VALUE(paramDefintion);
+      throw EXIT_REASONS.INVALID_BOOLEAN_VALUE(paramDefintion);
     }
   } else if (paramDefintion.type === 'number') {
     if (typeof value === 'number') parsedValue = value;
     else if (typeof value === 'string') {
       parsedValue = parseFloat(value);
-      if (isNaN(parsedValue)) throw ERROR_MESSAGES.INVALID_NUMBER_VALUE(paramDefintion);
+      if (isNaN(parsedValue)) throw EXIT_REASONS.INVALID_NUMBER_VALUE(paramDefintion);
     } else {
-      throw ERROR_MESSAGES.INVALID_NUMBER_VALUE(paramDefintion);
+      throw EXIT_REASONS.INVALID_NUMBER_VALUE(paramDefintion);
     }
+  } else if (paramDefintion.type === 'text') {
+    parsedValue = value?.toString();
   }
   return parsedValue;
 };

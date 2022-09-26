@@ -1,7 +1,7 @@
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
-import { ERROR_MESSAGES } from '../../config/botTexts.js';
 import type { Command } from '../../config/commands.js';
 import type { PollenParamValue } from '../../config/pollens.js';
+import { exitInteraction, EXIT_REASONS } from './shared/errorHandler.js';
 import PollinationInitCommand from './subcommands/init.js';
 import PollinationParamSetCommand from './subcommands/param/set.js';
 import PollinationToggleCommand from './subcommands/param/toggle.js';
@@ -63,10 +63,7 @@ const PollinationCommand: Command = {
     else if (subCommandName === 'set') return PollinationParamSetCommand.execute(interaction);
     else if (subCommandName === 'toggle') return PollinationToggleCommand.execute(interaction);
     else if (subCommandName === 'run') return PollinationRunCommand.execute(interaction);
-    else {
-      interaction.reply({ content: ERROR_MESSAGES.SERVER_ERROR(), ephemeral: true });
-      logger.error(new Error(`Invalid sub command: ${subCommandName}`));
-    }
+    else return exitInteraction(interaction, EXIT_REASONS.INVALID_SUB_COMMAND(subCommandName), 'error');
   }
 };
 

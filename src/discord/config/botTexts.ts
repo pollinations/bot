@@ -5,13 +5,4 @@ const botTexts = {
     `Creating: **${prompt}** using model: **${pollenDisplayName}**`
 };
 
-export const ERROR_MESSAGES = {
-  NO_SESSION: () => `No session has been started. Use \`/init\` command to start session`,
-  SERVER_ERROR: () => `There was an error while executing this command!`,
-  INVALID_BOOLEAN_VALUE: (param: PollenParamDefinition) =>
-    `${param.name} is a boolean parameter. Please use either of [true, false, 1, 0] or use toggle command.`,
-  INVALID_NUMBER_VALUE: (param: PollenParamDefinition) =>
-    `${param.name} is a numeric parameter. Please provide a number.`
-};
-
 export default botTexts;

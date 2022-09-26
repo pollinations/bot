@@ -11,8 +11,8 @@ import { isPrimaryPromptParam } from '../../../util/promptParamHandling.js';
 import type { Pollination, PollinationStatus } from '../index.js';
 
 const STATUS_COLORS: Record<PollinationStatus, ColorResolvable> = {
-  initialized: 'Yellow',
-  running: 'Blue',
+  initialized: 'Blue',
+  running: 'Yellow',
   done: 'Green',
   error: 'Red'
 };

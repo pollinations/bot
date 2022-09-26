@@ -4,6 +4,8 @@ import { POLLENS } from '../../../config/pollens.js';
 import { isPrimaryPromptParam } from '../../../util/promptParamHandling.js';
 import type { PollenParam, Pollination } from '../index.js';
 import { buildPollinationConfigEmbed } from '../shared/buildPollinationConfigEmbed.js';
+import { exitInteraction, EXIT_REASONS } from '../shared/errorHandler.js';
+import { upsertSummary } from '../shared/upsertSummary.js';
 
 // throws an error when creating autocomplete when larger
 const MAX_LENGTH_PROMPT_HISTORY_ITEM = 100;
@@ -62,12 +64,10 @@ const PollinationInitCommand: Subcommand = {
 
     // get pollen definition
     const pollen = POLLENS.find((p) => p.id === pollenId);
-    if (!pollen) {
-      // this should (almost) never happenl, since the autocomplete should prevent it
-      logger.warn({ pollenId }, `Invalid pollen id: ${pollenId}`);
-      interaction.reply({ content: `'${pollenId} is not a valid pollen id`, ephemeral: true });
-      return false;
-    }
+
+    // this should (almost) never happenl, since the autocomplete should prevent it
+    if (!pollen) return exitInteraction(interaction, EXIT_REASONS.INVALID_POLLEN_ID(pollenId), 'warn');
+
     logger.debug({ pollenId }, `Initializing pollen: ${pollenId} (${pollen.displayName})`);
 
     // send initial response
@@ -127,18 +127,9 @@ const PollinationInitCommand: Subcommand = {
       content: `You can \`/set\` or \`/toggle\` params, or  re-\`/init\` or \`/run\` the pollination.`
     };
 
-    const { currentSummary } = userState;
-    let newSummary;
-    if (currentSummary)
-      if (currentSummary.channelId === interaction.channelId) newSummary = await currentSummary.edit(messagePayload);
-      else {
-        // await (currentSummary.pinned && currentSummary.unpin());
-        await currentSummary.delete();
-        newSummary = await interaction.channel!.send(messagePayload);
-      }
-    else newSummary = await interaction.channel!.send(messagePayload);
+    let newSummary = await upsertSummary(interaction, messagePayload, userState.currentSummary);
 
-    await newSummary.pin();
+    // await newSummary.pin();
     logger.debug('Sent pollination configuration embed');
 
     // save session
