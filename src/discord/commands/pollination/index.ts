@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
+import { ApplicationCommandOptionType, ApplicationCommandType, ChatInputCommandInteraction } from 'discord.js';
 import type { Command } from '../../config/commands.js';
 import type { PollenParamValue } from '../../config/pollens.js';
 import { exitInteraction, EXIT_REASONS } from './shared/errorHandler.js';
@@ -21,7 +21,7 @@ export interface Pollination {
 
 export type PollinationStatus = Pollination['status'];
 
-const PollinationCommand: Command = {
+const PollinationCommand: Command<ChatInputCommandInteraction> = {
   data: {
     name: 'pollination',
     type: ApplicationCommandType.ChatInput,
@@ -53,7 +53,6 @@ const PollinationCommand: Command = {
     }
   },
   execute: async (interaction) => {
-    const { logger } = interaction;
     // return if not in channel
     if (!interaction.inGuild() || !interaction.channel)
       return interaction.reply({ content: 'This command can only be used in a server', ephemeral: true });

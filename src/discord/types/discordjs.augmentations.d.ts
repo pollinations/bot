@@ -8,4 +8,7 @@ declare module 'discord.js' {
   export interface BaseInteraction {
     logger: Logger;
   }
+  export interface Message {
+    logger: Logger;
+  }
 }

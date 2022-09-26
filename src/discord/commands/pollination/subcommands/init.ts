@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType } from 'discord.js';
+import { ApplicationCommandOptionType, ChatInputCommandInteraction } from 'discord.js';
 import type { Subcommand } from '../../../config/commands.js';
 import { POLLENS } from '../../../config/pollens.js';
 import { isPrimaryPromptParam } from '../../../util/promptParamHandling.js';
@@ -10,7 +10,7 @@ import { upsertSummary } from '../shared/upsertSummary.js';
 // throws an error when creating autocomplete when larger
 const MAX_LENGTH_PROMPT_HISTORY_ITEM = 100;
 
-const PollinationInitCommand: Subcommand = {
+const PollinationInitCommand: Subcommand<ChatInputCommandInteraction> = {
   data: {
     name: 'init',
     description: 'Initialize a pollen configuration',

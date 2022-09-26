@@ -1,7 +1,7 @@
-import { ApplicationCommandType } from 'discord.js';
+import { ApplicationCommandType, ChatInputCommandInteraction } from 'discord.js';
 import type { Command } from '../config/commands.js';
 
-const TestCommand: Command = {
+const TestCommand: Command<ChatInputCommandInteraction> = {
   data: {
     name: 'test',
     type: ApplicationCommandType.ChatInput,

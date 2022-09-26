@@ -1,9 +1,9 @@
-import { ApplicationCommandOptionType } from 'discord.js';
+import { ApplicationCommandOptionType, ChatInputCommandInteraction } from 'discord.js';
 import type { Subcommand } from '../../../../config/commands.js';
 import { resolveParamKeyAutoComplete } from '../../shared/resolveParamKeyAutoComplete.js';
 import { toggleOrSetParam } from '../../shared/toggleOrSetParam.js';
 
-const PollinationToggleCommand: Subcommand = {
+const PollinationToggleCommand: Subcommand<ChatInputCommandInteraction> = {
   data: {
     name: 'toggle',
     description: 'Toggle a parameter',

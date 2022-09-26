@@ -1,14 +1,13 @@
-import { ApplicationCommandOptionType, EmbedBuilder, userMention } from 'discord.js';
+import { ApplicationCommandOptionType, ChatInputCommandInteraction, EmbedBuilder, userMention } from 'discord.js';
 import type { Subcommand } from '../../../config/commands.js';
 import { PollenParamValue, POLLENS } from '../../../config/pollens.js';
 import lodash from 'lodash';
 import { executePollen } from '../../../shared/executePollen.js';
 import { buildPollinationConfigEmbed } from '../shared/buildPollinationConfigEmbed.js';
-import logger from '../../../logger.js';
 import { exitInteraction, EXIT_REASONS } from '../shared/errorHandler.js';
 import { upsertSummary } from '../shared/upsertSummary.js';
 
-const PollinationRunCommand: Subcommand = {
+const PollinationRunCommand: Subcommand<ChatInputCommandInteraction> = {
   data: {
     name: 'run',
     description: 'Execute an initialised pollen',

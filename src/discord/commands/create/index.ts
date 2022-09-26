@@ -1,13 +1,13 @@
-import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord.js';
-import { getPollensThatHavePromptParam, isPrimaryPromptParam } from '../util/promptParamHandling.js';
-import { POLLENS } from '../config/pollens.js';
-import type { Command } from '../config/commands.js';
-import { executePollen } from '../shared/executePollen.js';
-import { createEmbed } from '../util/discord.js/createEmbed.js';
+import { ApplicationCommandOptionType, ApplicationCommandType, ChatInputCommandInteraction } from 'discord.js';
+import { getPollensThatHavePromptParam, isPrimaryPromptParam } from '../../util/promptParamHandling.js';
+import { POLLENS } from '../../config/pollens.js';
+import type { Command } from '../../config/commands.js';
+import { executePollen } from '../../shared/executePollen.js';
+import { createEmbed } from '../../util/discord.js/createEmbed.js';
 import lodash from 'lodash';
-import botTexts from '../config/botTexts.js';
+import botTexts from '../../config/botTexts.js';
 
-const CreateCommand: Command = {
+const CreateCommand: Command<ChatInputCommandInteraction> = {
   data: {
     name: 'create',
     type: ApplicationCommandType.ChatInput,
@@ -32,6 +32,7 @@ const CreateCommand: Command = {
     ]
   },
   execute: async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
     const prompt = interaction.options.getString('prompt')!;
     const pollenId = interaction.options.getString('model')!;
 

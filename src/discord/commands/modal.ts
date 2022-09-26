@@ -2,6 +2,7 @@ import {
   ActionRowBuilder,
   ApplicationCommandOptionType,
   ApplicationCommandType,
+  ChatInputCommandInteraction,
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle
@@ -16,7 +17,7 @@ import { createEmbed } from '../util/discord.js/createEmbed.js';
 import botTexts from '../config/botTexts.js';
 const MODAL_ID = 'parameter-prototype';
 
-const ModalCommand: Command = {
+const ModalCommand: Command<ChatInputCommandInteraction> = {
   data: {
     name: 'modal',
     type: ApplicationCommandType.ChatInput,
