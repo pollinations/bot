@@ -3,10 +3,8 @@ import type {
   APIApplicationCommandSubcommandOption,
   ApplicationCommandType,
   AutocompleteInteraction,
-  ChatInputCommandInteraction,
   Interaction
 } from 'discord.js';
-import PollinationCommand from '../commands/pollination/index.js';
 import CreateCommand from '../commands/create/index.js';
 
 // https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
@@ -23,4 +21,4 @@ export interface Subcommand<InteractionType extends Interaction> extends Omit<Co
 }
 
 // Register all commands to be used here
-export const COMMANDS: Command<any>[] = [CreateCommand, PollinationCommand];
+export const COMMANDS: Command<any>[] = [CreateCommand];
