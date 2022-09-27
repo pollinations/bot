@@ -1,6 +1,11 @@
 import { type ChatInputCommandInteraction, Message } from 'discord.js';
 import type { PollenDefinition, PollenParamValue } from '../config/pollens.js';
-import { buildMainEmbed, buildDefaultResponsePayload, createVideoAttachments } from './discord.js/embeds.js';
+import {
+  buildMainEmbed,
+  buildDefaultResponsePayload,
+  createVideoAttachments,
+  MainEmbedOptions
+} from './discord.js/embeds.js';
 import { type UpdateCallback, executePollen } from './executePollen.js';
 import type { ParsedPollinationsResponse } from './parsePollinationsResponse.js';
 
@@ -13,19 +18,35 @@ export const executePollenAndUpdateUI = async (
   let lastUpdate: ParsedPollinationsResponse | undefined;
   const title = pollen.displayName;
   // initial response (has no url=cid yet)
-  const payload = { embeds: [buildMainEmbed(title, null, prompt)] };
+  const staticEmbedOptions: MainEmbedOptions = {
+    title,
+    prompt,
+    description: pollen.description,
+    thumbnailUrl: pollen.thumbnailUrl
+  };
+  const payload = { embeds: [buildMainEmbed({ ...staticEmbedOptions })] };
   let response = iOrMsg instanceof Message ? await iOrMsg.reply(payload) : await iOrMsg.channel!.send(payload);
+
   try {
     const handleUpdate: UpdateCallback = async (data) => {
       lastUpdate = data;
-      const { mainEmbed, imageEmbeds } = buildDefaultResponsePayload(title, data, prompt, data.success ? 2 : 1);
+      const { mainEmbed, imageEmbeds } = buildDefaultResponsePayload(
+        {
+          ...staticEmbedOptions,
+          statusCode: data.success ? 2 : 1
+        },
+        data
+      );
       const files = await createVideoAttachments(data.videos);
       response.edit({ embeds: [mainEmbed, ...imageEmbeds], files });
     };
     await executePollen(pollen.id, params, iOrMsg.logger, handleUpdate);
   } catch (err) {
     if (response) {
-      const { mainEmbed, imageEmbeds } = buildDefaultResponsePayload(title, lastUpdate, prompt, 3);
+      const { mainEmbed, imageEmbeds } = buildDefaultResponsePayload(
+        { ...staticEmbedOptions, statusCode: 3 },
+        lastUpdate
+      );
       const files = await createVideoAttachments(lastUpdate?.videos);
       await response.edit({ embeds: [mainEmbed, ...imageEmbeds], files });
     }

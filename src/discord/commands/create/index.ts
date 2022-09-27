@@ -38,8 +38,8 @@ const CreateCommand: Command<ChatInputCommandInteraction> = {
     const pollen = getPollenFromChannelName(channelName);
     let choices = pollen
       ? [pollen]
-      : getPollensThatHavePromptParam(POLLENS).filter((p) =>
-          p.displayName.toLowerCase().startsWith(userInput.toLowerCase())
+      : getPollensThatHavePromptParam(POLLENS).filter(
+          (p) => !userInput || p.displayName.toLowerCase().startsWith(userInput.toLowerCase())
         );
     return i.respond(choices.map((p) => ({ name: p.displayName, value: p.id })));
   },

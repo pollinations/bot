@@ -49,6 +49,7 @@ export interface PollenDefinition {
   id: string;
   model: string; // name of the exact model being used
   version?: string;
+  thumbnailUrl?: string;
   displayName: string; // user-friendly name
   description?: string; // brief summary of how this pollen can be used
   params: PollenParamDefinition[]; // Set of allowed parameters for this pollen
@@ -219,6 +220,7 @@ export const POLLENS: PollenDefinition[] = [
     id: 'stable-diffusion',
     model: 'stable-diffusion',
     displayName: 'Stable Diffusion',
+    thumbnailUrl: 'https://s4.gifyu.com/images/ezgif.com-gif-maker4faa2b37cd286f60.gif',
     defaultForTextPrompts: true,
     params: [
       {
@@ -255,8 +257,25 @@ export const POLLENS: PollenDefinition[] = [
         description: '3D model of the scene'
       }
     ]
+  },
+  {
+    id: 'pimped-diffusion',
+    displayName: 'Pimped Diffusion',
+    description: 'Pimps the prompt using GPT-3 and runs Stable Diffusion on the pimped prompts.',
+    thumbnailUrl: 'https://ipfs.pollinations.ai/ipfs/QmVDhv4XjHJgH8NoXgJi1hfY87VfWdiJUxnWt5zHbhkaGW?filename=00003.png',
+    model: 'pimped-diffusion',
+    params: [
+      {
+        type: 'text',
+        name: 'prompt',
+        xOrder: 0,
+        required: true,
+        displayName: 'Prompt',
+        isPrimaryTextPrompt: true
+      }
+    ],
+    outputs: [{ type: 'image' }]
   }
-
   // {
   //   name: 'photo3d',
   //   displayName: 'Photo3D',

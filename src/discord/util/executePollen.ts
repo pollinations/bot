@@ -15,7 +15,8 @@ export async function executePollen(
   onUpdate: UpdateCallback
 ) {
   try {
-    const pollinator = POLLINATORS.find((p) => p.pollenId === pollenId)!;
+    const pollinator = POLLINATORS.find((p) => p.pollenId === pollenId);
+    if (!pollinator) throw new Error(`No pollinator found for pollenId '${pollenId}'`);
     logger.info({ pollenId, params, pollinator: pollinator.url }, 'Executing pollen');
 
     // throttled update of response
