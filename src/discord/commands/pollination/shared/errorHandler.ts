@@ -1,10 +1,12 @@
 import type { PollenParamDefinition } from '../../../config/pollens.js';
 import type { Level } from 'pino';
-import type { Interaction } from 'discord.js';
+import type { Interaction, Message } from 'discord.js';
+import { forceReplyToInteraction } from '../../../util/forceReplyTo.js';
 export interface ExitReason {
   log?: string;
   discord?: string;
   meta?: any;
+  level?: Level;
 }
 
 export const EXIT_REASONS = {
@@ -47,17 +49,30 @@ export const EXIT_REASONS = {
     ({
       log: message || `Unexpected exception: ${error}`,
       meta: error
+    } as ExitReason),
+  PROMPT_PARAM_NOT_FOUND: (pollenId: string) =>
+    ({
+      log: `Pollen ${pollenId} does not have a primary prompt param`,
+      discord: `Pollen ${pollenId} does not have a primary prompt param`,
+      level: 'warn'
     } as ExitReason)
 };
-export const exitInteraction = async (interaction: Interaction, exitReason: ExitReason, logLevel: Level = 'info') => {
-  const { meta, discord, log } = exitReason;
+const logExit = (interaction: Interaction | Message, exitReason: ExitReason, logLevel?: Level) => {
+  const { meta, discord, log, level } = exitReason;
+
+  // log
   const logMessage = log || discord || 'Exiting...';
-  if (meta) interaction.logger[logLevel](meta, logMessage);
-  else interaction.logger[logLevel](logMessage);
-  if (interaction.isRepliable() && !interaction.replied)
-    await interaction.reply({
-      content: discord || "Sorry, this didn't work. Please try again.",
-      ephemeral: true
-    });
-  return false;
+  const logLevelToUse = logLevel || level || 'info';
+  if (meta) interaction.logger[logLevelToUse](meta, logMessage);
+  else interaction.logger[logLevelToUse](logMessage);
+};
+export const exitInteraction = async (interaction: Interaction, exitReason: ExitReason, logLevel?: Level) => {
+  logExit(interaction, exitReason, logLevel);
+
+  // reply in discord
+  const content = exitReason.discord || "Sorry, this didn't work. Please try again.";
+  return forceReplyToInteraction(interaction, content);
+};
+export const exitMessage = async (interaction: Interaction | Message, exitReason: ExitReason, logLevel?: Level) => {
+  logExit(interaction, exitReason, logLevel);
 };

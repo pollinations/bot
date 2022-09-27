@@ -1,108 +1,76 @@
-import { ClientEvents, EmbedBuilder, GuildTextBasedChannel, Message } from 'discord.js';
-import { ChannelConfig, ChannelName, CHANNEL_CONFIG } from '../config/channels.js';
-import lodash from 'lodash';
-import { runModelGenerator } from '@pollinations/ipfs/awsPollenRunner.js';
-import { extractMediaFromIpfsResponse } from '../util/extractMediaFromIpfsResponse.js';
-import { downloadFiles } from '../util/downloadFiles.js';
-
+import type { ClientEvents, GuildTextBasedChannel, Message } from 'discord.js';
+import { CHANNEL_CONFIG } from '../config/channels.js';
+import { PollenParamValue, POLLENS } from '../config/pollens.js';
+import { parseTextWithBotMention } from '../util/discord.js/parseTextWithBotMention.js';
+import { Data, runModelGenerator } from '@pollinations/ipfs/awsPollenRunner.js';
+import { isPrimaryPromptParam } from '../util/promptParamHandling.js';
+import { POLLINATORS } from '../config/pollinators.js';
+import { parsePollinationsResponse } from '../util/parsePollinationsResponse.js';
+import _, { create } from 'lodash';
+import { buildMainEmbed, buildResponseEmbeds } from '../util/discord.js/embeds.js';
+import { executePollen } from '../util/executePollen.js';
 const channelNames = Object.keys(CHANNEL_CONFIG);
 
 const clickableChannelIDs = channelNames
-  .map((channelName) => `<#${CHANNEL_CONFIG[channelName as ChannelName].channelId}>`)
+  .map((channelName) => `<#${CHANNEL_CONFIG[channelName]!.channelId}>`)
   .join(', ');
 
 export const handleMessageCreate = async (...args: ClientEvents['messageCreate']) => {
-  const dm = args[0];
-  // return if message is by a bot
-  if (dm.author.bot) return;
+  const msg = args[0];
+  const { logger } = msg;
+  let response: Message | undefined;
+  const channel = msg.channel as GuildTextBasedChannel;
+  const { restOfMessage: prompt } = parseTextWithBotMention(msg.content);
+  const attachmentUrls = msg.attachments.map((a) => a.url);
 
-  // return if message is not a mention of the bot
-  const botIDString = `<@${dm.client.user?.id}>`;
-  if (dm.content.indexOf(botIDString) === -1) return;
+  // log request
+  logger.info(
+    {
+      channelName: channel.name,
+      content: msg.content,
+      prompt,
+      attachmentUrls
+    },
+    `Got dm`
+  );
 
-  const channel = dm.channel as GuildTextBasedChannel;
-  const channelNameUnvalidated = (channel as GuildTextBasedChannel).name;
+  // retrieve pollen definition via channel configuration
+  const channelConfig = CHANNEL_CONFIG[channel.name];
+  const pollen = channelConfig && POLLENS.find((p) => p.id === channelConfig.pollenId);
 
-  if (!channelNames.includes(channelNameUnvalidated)) {
-    await dm.react('🚫');
-    await dm.reply(
+  // return if channel is not configured
+  if (!pollen) {
+    if (!channelConfig) logger.info({ channelName: channel.name }, 'Unsupported channnel name');
+    else
+      logger.warn(
+        { pollenId: channelConfig.pollenId, channelName: channel.name },
+        'Could not find pollen configuration'
+      );
+    // reply with error
+    await msg.react('🚫');
+    await msg.reply(
       'This channel is not supported. Please use one of the following channels to send your prompt: ' +
         clickableChannelIDs
     );
     return;
   }
 
-  const channelName = channelNameUnvalidated as ChannelName;
-  const config = CHANNEL_CONFIG[channelName] as ChannelConfig;
+  // create param set
+  const primaryPromptParamDefinition = pollen.params.find(isPrimaryPromptParam);
+  if (!primaryPromptParamDefinition) throw new Error('Pollen does not have a primary prompt param');
+  const params = pollen.params.reduce((acc, param) => {
+    acc[param.name] = param.defaultValue;
+    return acc;
+  }, {} as Record<string, PollenParamValue>);
+  params[primaryPromptParamDefinition.name] = prompt;
 
-  const { model, promptField } = CHANNEL_CONFIG[channelName]!;
+  // get pollinator
+  const pollinator = POLLINATORS.find((p) => p.pollenId === pollen.id);
+  if (!pollinator) throw new Error('Could not find pollinator for pollen');
 
-  const prettyModelName = extractPrettyModelNameFromURL(model);
-  console.log('selected model', prettyModelName);
-  console.log('got message content', dm.content);
+  // GOOD TO GO
+  msg.react('🐝');
+  await executePollen(pollen, params, pollinator, msg, prompt);
 
-  dm.react('🐝');
-
-  // message is either the attachment or the message interpreted as the text prompt (without the bot name)
-  const message = checkAttachment(dm) || dm.content.replace(botIDString, '');
-
-  const messageRef = await dm.reply(`Creating: **${message}** using model: **${prettyModelName}**.`);
-
-  // create throttled version of the messageRef.edit() function; use it to update bot message on the client
-  const editReply = lodash.throttle(messageRef.edit.bind(messageRef), 10000);
-
-  console.log('running model generator', model, { [promptField]: message });
-  const results = runModelGenerator(
-    {
-      [promptField]: message
-    },
-    model
-  );
-
-  for await (const data of results) {
-    console.log('got data', data);
-
-    const output = data.output;
-    const contentID = data['.cid'];
-
-    const images = extractMediaFromIpfsResponse(output).slice(0, config.numImages || Infinity);
-    console.log('got images', images);
-
-    const files = await downloadFiles(images, '.mp4');
-
-    // inside a command, event listener, etc.
-    const embeds = images.map(([_filename, image]) => createEmbed(prettyModelName, message, image, contentID));
-
-    console.log('calling editReply', { embeds, files });
-    await editReply({ embeds, files });
-  }
   return true;
 };
-
-const extractPrettyModelNameFromURL = (modelName: string) =>
-  //@ts-ignore
-  modelName
-    .split('/')
-    .pop()
-    .split('@')
-    .shift()
-    .replaceAll('-', ' ')
-    .replace(/\b\w/g, (l) => l.toUpperCase());
-
-function checkAttachment(dMessage: Message) {
-  if (dMessage.attachments.size > 0) {
-    // get attachment image url
-    const { url } = dMessage.attachments.first()!;
-    console.log('got attachment with url', url);
-    return url;
-  }
-  return null;
-}
-
-function createEmbed(modelNameHumanReadable: string, messageWithoutBotName: string, image: string, contentID: string) {
-  return new EmbedBuilder()
-    .setDescription(`Model: **${modelNameHumanReadable}**`)
-    .setTitle(messageWithoutBotName.slice(0, 250))
-    .setImage(image)
-    .setURL(`https://pollinations.ai/p/${contentID}`);
-}

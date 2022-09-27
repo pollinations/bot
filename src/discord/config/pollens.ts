@@ -236,6 +236,23 @@ export const POLLENS: PollenDefinition[] = [
         type: 'video'
       }
     ]
+  },
+  {
+    id: 'photo3d',
+    model: 'photo3d',
+    displayName: 'Photo3D',
+    params: [
+      {
+        type: 'image',
+        name: 'image'
+      }
+    ],
+    outputs: [
+      {
+        type: '3d',
+        description: '3D model of the scene'
+      }
+    ]
   }
 
   // {

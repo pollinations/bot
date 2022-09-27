@@ -9,11 +9,9 @@ import {
 } from 'discord.js';
 import type { Command } from '../config/commands.js';
 import { PollenParamDefinition, POLLENS } from '../config/pollens.js';
-import { executePollen } from '../shared/executePollen.js';
 import { isPrimaryPromptParam } from '../util/promptParamHandling.js';
 import lodash from 'lodash';
 import { parseModalFieldsAsParams } from '../util/discord.js/parseModalFieldsAsParams.js';
-import { createEmbed } from '../util/discord.js/createEmbed.js';
 import botTexts from '../config/botTexts.js';
 const MODAL_ID = 'parameter-prototype';
 
@@ -93,12 +91,12 @@ const ModalCommand: Command<ChatInputCommandInteraction> = {
     const result = await interaction!.channel!.send(botTexts.onExecutionStart(prompt, pollen.displayName));
     const updateResultMessage = lodash.throttle(result.edit.bind(result), 10000);
 
-    for await (const data of executePollen(pollen, params)) {
-      const { files, images, ipfs } = data;
-      const contentID = ipfs['.cid'];
-      const embeds = images.map(([_filename, image]) => createEmbed(pollen.displayName!, prompt, image, contentID));
-      updateResultMessage({ embeds, files });
-    }
+    // for await (const data of executePollen(pollen, params)) {
+    //   const { files, images, ipfs } = data;
+    //   const contentID = ipfs['.cid'];
+    //   const embeds = images.map(([_filename, image]) => createEmbed(pollen.displayName!, prompt, image, contentID));
+    //   updateResultMessage({ embeds, files });
+    // }
     return;
   }
 };

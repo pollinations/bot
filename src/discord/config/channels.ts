@@ -1,50 +1,36 @@
 export interface ChannelConfig {
-  model: string;
-  promptField: string;
+  pollenId: string;
   channelId: string;
-  numImages?: number;
 }
 
-export const CHANNEL_CONFIG = {
+export const CHANNEL_CONFIG: Record<string, ChannelConfig> = {
   'dalle-mini': {
-    model: '614871946825.dkr.ecr.us-east-1.amazonaws.com/voodoohop/dalle-playground',
-    promptField: 'prompt',
-    channelId: '999295739727466528'
+    pollenId: 'dalle-mini',
+    channelId: '999296010025173012'
   },
   'latent-diffusion': {
-    model: '614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/preset-frontpage',
-    promptField: 'Prompt',
+    pollenId: 'latent-diffusion',
     channelId: '999296010025173012'
   },
   'majesty-diffusion': {
-    model: '614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/majesty-diffusion-cog',
-    promptField: 'Prompt',
-    channelId: '999295785621540914',
-    numImages: 1
+    pollenId: 'majesty-diffusion',
+    channelId: '999295785621540914'
   },
   'disco-diffusion': {
-    model: '614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/disco-diffusion',
-    promptField: 'prompt',
-    channelId: '1003013847562592306',
-    numImages: 1
+    pollenId: 'disco-diffusion',
+    channelId: '1003013847562592306'
   },
   photo3d: {
-    model: '614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/adampi',
-    promptField: 'image',
-    channelId: '1007030609060823082',
-    numImages: 1
+    pollenId: 'photo3d',
+    channelId: '1007030609060823082'
   },
   'retrieval-diffusion': {
-    model: '614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/latent-diffusion-400m',
-    promptField: 'prompts',
-    channelId: '1009168983578124449',
-    numImages: 1
+    pollenId: 'retrieval-diffusion',
+    channelId: '1009168983578124449'
   },
   'stable-diffusion': {
-    model: '614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/stable-diffusion-private',
-    promptField: 'prompts',
-    channelId: '1011335962007175198',
-    numImages: 4
+    pollenId: 'stable-diffusion',
+    channelId: '1011335962007175198'
   }
 };
 

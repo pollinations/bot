@@ -2,10 +2,11 @@ import { ApplicationCommandOptionType, ApplicationCommandType, ChatInputCommandI
 import { getPollensThatHavePromptParam, isPrimaryPromptParam } from '../../util/promptParamHandling.js';
 import { POLLENS } from '../../config/pollens.js';
 import type { Command } from '../../config/commands.js';
-import { executePollen } from '../../shared/executePollen.js';
-import { createEmbed } from '../../util/discord.js/createEmbed.js';
+import { executePollen } from '../../util/executePollen.js';
 import lodash from 'lodash';
 import botTexts from '../../config/botTexts.js';
+import { exitInteraction, EXIT_REASONS } from '../pollination/shared/errorHandler.js';
+import { POLLINATORS } from '../../config/pollinators.js';
 
 const CreateCommand: Command<ChatInputCommandInteraction> = {
   data: {
@@ -32,24 +33,26 @@ const CreateCommand: Command<ChatInputCommandInteraction> = {
     ]
   },
   execute: async (interaction) => {
-    if (!interaction.isChatInputCommand()) return;
+    const { logger } = interaction;
     const prompt = interaction.options.getString('prompt')!;
     const pollenId = interaction.options.getString('model')!;
 
     const pollen = POLLENS.find((p) => p.id === pollenId)!;
-    const promptParam = pollen.params.find(isPrimaryPromptParam)!;
+    if (!pollen) return exitInteraction(interaction, EXIT_REASONS.INVALID_POLLEN_ID(pollenId), 'warn');
+
+    const promptParam = pollen.params.find(isPrimaryPromptParam);
+    if (!promptParam) return exitInteraction(interaction, EXIT_REASONS.PROMPT_PARAM_NOT_FOUND(pollenId), 'warn');
+
     const params = {
       [promptParam.name]: prompt
     };
-    await interaction.reply(botTexts.onExecutionStart(prompt, pollen.displayName));
-    const updateResultMessage = lodash.throttle(interaction.editReply.bind(interaction), 10000);
+    await interaction.reply('🐝');
 
-    for await (const data of executePollen(pollen, params)) {
-      const { files, images, ipfs } = data;
-      const contentID = ipfs['.cid'];
-      const embeds = images.map(([_filename, image]) => createEmbed(pollen.displayName!, prompt, image, contentID));
-      updateResultMessage({ embeds, files });
-    }
+    // TODO: fetch this from some sort of pollinator registry
+    const pollinator = POLLINATORS.find((pollinator) => pollinator.pollenId === pollen.id)!;
+
+    await executePollen(pollen, params, pollinator, interaction, prompt);
+    return true;
   }
 };
 
