@@ -1,47 +1,43 @@
 import { Data, runModelGenerator } from '@pollinations/ipfs/awsPollenRunner.js';
-import { ChatInputCommandInteraction, Interaction, InteractionResponse, Message } from 'discord.js';
+import { ChatInputCommandInteraction, Interaction, InteractionResponse, Message, MessagePayload } from 'discord.js';
 import _ from 'lodash';
 import type { PollenDefinition, PollenParamValue } from '../config/pollens.js';
 import type { Pollinator } from '../config/pollinators.js';
-import { buildMainEmbed, buildResponseEmbeds } from './discord.js/embeds.js';
-import { parsePollinationsResponse } from './parsePollinationsResponse.js';
-
+import { defaultResponsePayloadBuilder } from './defaultResponsePayloadBuilder.js';
+import { ParsedPollinationsResponse, parsePollinationsResponse } from './parsePollinationsResponse.js';
+export type ResponsePayloadBuilder = (
+  parsedData: ParsedPollinationsResponse | undefined,
+  on: 'init' | 'error' | 'update' | 'success'
+) => MessagePayload | false;
 export async function executePollen(
   pollen: PollenDefinition,
   params: Record<string, PollenParamValue>,
   pollinator: Pollinator,
   msgOrInteraction: Message | ChatInputCommandInteraction,
-  prompt?: string
+  responsePayloadBuilder: ResponsePayloadBuilder
 ) {
   const { logger } = msgOrInteraction;
 
   // defined outside so we can keep achieved progress when sending error
   let response: Message | undefined;
-  let images: [string, string][] = [];
-  let outputCid: string | undefined;
+  let data: ParsedPollinationsResponse | undefined;
   try {
     logger.info({ pollenId: pollen.id, params, pollinator: pollinator.url }, 'Executing pollen');
 
-    const embed = buildMainEmbed(pollen.displayName, null, prompt);
+    // initial response
+    const payload = responsePayloadBuilder(undefined, 'init');
+    if (payload) {
+      if (msgOrInteraction instanceof Message) response = await msgOrInteraction.reply(payload);
+      else response = await msgOrInteraction.channel?.send(payload);
+    }
 
-    if (msgOrInteraction instanceof Message)
-      response = await msgOrInteraction.reply({
-        embeds: [embed]
-      });
-    else response = await msgOrInteraction.channel?.send({ embeds: [embed] });
-
-    // throttled update of results
+    // throttled update of response
     const updateResponse = _.throttle(async (raw: Data) => {
-      const data = parsePollinationsResponse(raw);
-      logger.debug({ outputCid: data.cid }, 'Updating response');
-      images = data.images;
+      data = parsePollinationsResponse(raw);
+      logger.debug({ outputCid: data.outputCid }, 'Updating response');
 
-      const status = data.success ? 2 : 1;
-      const { mainEmbed, imageEmbeds } = buildResponseEmbeds(pollen.displayName, prompt, images, outputCid!, status);
-
-      return response!.edit({
-        embeds: [mainEmbed, ...imageEmbeds]
-      });
+      const payload = responsePayloadBuilder(data, 'update');
+      if (payload) await response?.edit(payload);
     }, 5000);
 
     // main execution loop
@@ -49,14 +45,14 @@ export async function executePollen(
     let outputCidLogged = false;
     for await (const raw of runModelGenerator(params, pollinator.url)) {
       counter = counter++;
-      outputCid = raw['.cid'];
+      // input cid on first response
       if (counter === 1) logger.info({ inputCid: raw.input_cid }, 'Got first response. IPFS Input is set up');
-      if (!outputCidLogged && outputCid) {
+      if (!outputCidLogged && raw['.cid']) {
+        // log outputCid only once as soon as it is available
         outputCidLogged = true;
-        logger.info({ outputCid }, 'Pollination started');
+        logger.info({ outputCid: raw['.cid'] }, 'Pollination started');
       }
       logger.debug(`[it ${counter}]: received data from backend`);
-
       await updateResponse(raw);
     }
     logger.info({ iterations: counter }, 'Pollination finished successfully');
@@ -64,8 +60,9 @@ export async function executePollen(
   } catch (err) {
     logger.error(err, 'Unhandled exception while executing event');
     if (response) {
-      const { mainEmbed, imageEmbeds } = buildResponseEmbeds(pollen.displayName, prompt, images, outputCid, 3);
-      response.edit({ embeds: [mainEmbed, ...imageEmbeds] });
+      // error response
+      const payload = responsePayloadBuilder(data, 'error');
+      if (payload) await response.edit(payload);
     }
   }
 }

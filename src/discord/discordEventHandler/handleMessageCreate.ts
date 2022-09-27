@@ -2,13 +2,11 @@ import type { ClientEvents, GuildTextBasedChannel, Message } from 'discord.js';
 import { CHANNEL_CONFIG } from '../config/channels.js';
 import { PollenParamValue, POLLENS } from '../config/pollens.js';
 import { parseTextWithBotMention } from '../util/discord.js/parseTextWithBotMention.js';
-import { Data, runModelGenerator } from '@pollinations/ipfs/awsPollenRunner.js';
 import { isPrimaryPromptParam } from '../util/promptParamHandling.js';
 import { POLLINATORS } from '../config/pollinators.js';
-import { parsePollinationsResponse } from '../util/parsePollinationsResponse.js';
-import _, { create } from 'lodash';
-import { buildMainEmbed, buildResponseEmbeds } from '../util/discord.js/embeds.js';
+import _ from 'lodash';
 import { executePollen } from '../util/executePollen.js';
+import { defaultResponsePayloadBuilder } from '../util/defaultResponsePayloadBuilder.js';
 const channelNames = Object.keys(CHANNEL_CONFIG);
 
 const clickableChannelIDs = channelNames
@@ -70,7 +68,8 @@ export const handleMessageCreate = async (...args: ClientEvents['messageCreate']
 
   // GOOD TO GO
   msg.react('🐝');
-  await executePollen(pollen, params, pollinator, msg, prompt);
+  const responsePayloadBuilder = defaultResponsePayloadBuilder(pollen.displayName, prompt);
+  await executePollen(pollen, params, pollinator, msg, responsePayloadBuilder);
 
   return true;
 };

@@ -3,10 +3,16 @@ import type { Data } from '@pollinations/ipfs/awsPollenRunner.js';
 const IMAGE_EXT = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.tiff', '.svg'];
 const VIDEO_EXT = ['.mp4', '.webm', '.mov', '.avi', '.wmv', '.flv', '.mkv', '.mpg', '.mpeg'];
 
-export const parsePollinationsResponse = (raw: Data) => {
+export interface ParsedPollinationsResponse {
+  outputCid: string | undefined;
+  images: [string, string][];
+  videos: [string, string][];
+  success: boolean;
+}
+export const parsePollinationsResponse = (raw: Data): ParsedPollinationsResponse => {
   const { output } = raw;
   const { success } = output;
-  const cid = raw['.cid'];
+  const outputCid = raw['.cid'];
   // filter out non-image outputs
   const images = Object.entries(output).filter(
     ([key, value]) => IMAGE_EXT.some((ext) => key.endsWith(ext)) && typeof value === 'string'
@@ -16,7 +22,7 @@ export const parsePollinationsResponse = (raw: Data) => {
   ) as [string, string][];
 
   return {
-    cid,
+    outputCid,
     images,
     videos,
     success

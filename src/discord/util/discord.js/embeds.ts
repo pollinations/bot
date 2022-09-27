@@ -26,7 +26,7 @@ const AUTHOR = {
   url: 'https://pollinations.ai'
 };
 const buildEmbedUrl = (cid?: string) => (cid ? `https://pollinations.ai/p/${cid}` : null);
-export const buildResponseEmbeds = (
+export const buildDefaultResponseEmbeds = (
   title: string,
   prompt?: string,
   images: [string, string][] = [],

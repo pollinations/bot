@@ -3,10 +3,9 @@ import { getPollensThatHavePromptParam, isPrimaryPromptParam } from '../../util/
 import { POLLENS } from '../../config/pollens.js';
 import type { Command } from '../../config/commands.js';
 import { executePollen } from '../../util/executePollen.js';
-import lodash from 'lodash';
-import botTexts from '../../config/botTexts.js';
 import { exitInteraction, EXIT_REASONS } from '../pollination/shared/errorHandler.js';
 import { POLLINATORS } from '../../config/pollinators.js';
+import { defaultResponsePayloadBuilder } from '../../util/defaultResponsePayloadBuilder.js';
 
 const CreateCommand: Command<ChatInputCommandInteraction> = {
   data: {
@@ -51,7 +50,8 @@ const CreateCommand: Command<ChatInputCommandInteraction> = {
     // TODO: fetch this from some sort of pollinator registry
     const pollinator = POLLINATORS.find((pollinator) => pollinator.pollenId === pollen.id)!;
 
-    await executePollen(pollen, params, pollinator, interaction, prompt);
+    const responsePayloadBuilder = defaultResponsePayloadBuilder(pollen.displayName, prompt);
+    await executePollen(pollen, params, pollinator, interaction, responsePayloadBuilder);
     return true;
   }
 };
