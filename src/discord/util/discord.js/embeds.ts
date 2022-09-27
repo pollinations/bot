@@ -22,9 +22,10 @@ const STATUS = {
 };
 export type PollinationStatus = keyof typeof STATUS;
 
+const ICON_URL = 'https://pollinations.ai/favicon-32x32.png';
 const AUTHOR = {
   name: 'pollinations.ai',
-  iconURL: 'https://pollinations.ai/favicon-32x32.png',
+  iconURL: ICON_URL,
   url: 'https://pollinations.ai'
 };
 
@@ -61,7 +62,8 @@ export const buildMainEmbed = (
     .setTitle(title || 'Your Pollination')
     .setURL(url)
     .setAuthor(AUTHOR)
-    .setColor(status.color as ColorResolvable);
+    .setColor(status.color as ColorResolvable)
+    .setFooter({ text: 'Powered by pollinations.ai', iconURL: ICON_URL });
   if (promptValue) eb.addFields([{ name: 'Prompt', value: promptValue }]);
   eb.addFields([{ name: 'Status', value: status.label, inline: true }]).setTimestamp();
   return eb;

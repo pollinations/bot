@@ -46,7 +46,7 @@ const CreateCommand: Command<ChatInputCommandInteraction> = {
   execute: async (i) => {
     const { logger } = i;
     const prompt = i.options.getString('prompt')!;
-    const pollenId = i.options.getString('model')!;
+    const pollenId = i.options.getString('model') || POLLENS.find((p) => p.defaultForTextPrompts)?.id;
     const channelName = (i.channel as GuildTextBasedChannel).name;
     logger.info(
       {

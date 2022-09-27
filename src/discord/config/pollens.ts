@@ -53,6 +53,7 @@ export interface PollenDefinition {
   description?: string; // brief summary of how this pollen can be used
   params: PollenParamDefinition[]; // Set of allowed parameters for this pollen
   outputs: PollenOutputDescriptor[];
+  defaultForTextPrompts?: boolean; // if true, this pollen will be used by default for text prompts
   prototype?: boolean; // Flag that I use to pick a model for testing prototypes; feel free to remove it or add your own
 }
 
@@ -218,6 +219,7 @@ export const POLLENS: PollenDefinition[] = [
     id: 'stable-diffusion',
     model: 'stable-diffusion',
     displayName: 'Stable Diffusion',
+    defaultForTextPrompts: true,
     params: [
       {
         name: 'prompts',
