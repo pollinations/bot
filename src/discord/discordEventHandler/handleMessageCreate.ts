@@ -1,11 +1,10 @@
 import type { ClientEvents, GuildTextBasedChannel, Message } from 'discord.js';
 import { CHANNEL_CONFIG } from '../config/channels.js';
-import { PollenDefinition, PollenParamValue, POLLENS } from '../config/pollens.js';
 import { parseTextWithBotMention } from '../util/discord.js/parseTextWithBotMention.js';
-import { isPrimaryPromptParam } from '../util/promptParamHandling.js';
 import _ from 'lodash';
 import { executePollenAndUpdateUI } from '../util/executePollenAndUpdateUI.js';
 import { createParamSet } from '../util/createParamSet.js';
+import { getPollenFromChannelName } from '../util/getPollenByChannelName.js';
 const channelNames = Object.keys(CHANNEL_CONFIG);
 
 const clickableChannelIDs = channelNames
@@ -44,11 +43,6 @@ export const handleMessageCreate = async (...args: ClientEvents['messageCreate']
 
   const params = createParamSet(pollen, prompt);
   await msg.react('🐝');
-  await executePollenAndUpdateUI(pollen.id, params, msg, prompt);
+  await executePollenAndUpdateUI(pollen, params, msg, prompt);
   return true;
-};
-
-const getPollenFromChannelName = (channelName: string) => {
-  const channelConfig = CHANNEL_CONFIG[channelName];
-  return channelConfig && POLLENS.find((p) => p.id === channelConfig.pollenId);
 };

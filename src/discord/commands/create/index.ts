@@ -9,6 +9,7 @@ import { POLLENS } from '../../config/pollens.js';
 import type { Command } from '../../config/commands.js';
 import { executePollenAndUpdateUI } from '../../util/executePollenAndUpdateUI.js';
 import { createParamSet } from '../../util/createParamSet.js';
+import { getPollenFromChannelName } from '../../util/getPollenByChannelName.js';
 
 const CreateCommand: Command<ChatInputCommandInteraction> = {
   data: {
@@ -27,12 +28,20 @@ const CreateCommand: Command<ChatInputCommandInteraction> = {
         required: false,
         description: 'the pollen to use',
         type: ApplicationCommandOptionType.String,
-        choices: getPollensThatHavePromptParam(POLLENS).map(({ id, model, displayName }) => ({
-          name: displayName || model,
-          value: id
-        }))
+        autocomplete: true
       }
     ]
+  },
+  autoCompleteHandler: async (i) => {
+    const userInput = i.options.getString('model') || '';
+    const channelName = (i.channel as GuildTextBasedChannel).name;
+    const pollen = getPollenFromChannelName(channelName);
+    let choices = pollen
+      ? [pollen]
+      : getPollensThatHavePromptParam(POLLENS).filter((p) =>
+          p.displayName.toLowerCase().startsWith(userInput.toLowerCase())
+        );
+    return i.respond(choices.map((p) => ({ name: p.displayName, value: p.id })));
   },
   execute: async (i) => {
     const { logger } = i;
@@ -48,15 +57,15 @@ const CreateCommand: Command<ChatInputCommandInteraction> = {
       `Got 'Create' command`
     );
 
-    const pollen = POLLENS.find((p) => p.id === pollenId)!;
+    const pollen = getPollenFromChannelName(channelName) || POLLENS.find((p) => p.id === pollenId);
     if (!pollen) {
       logger.warn({ pollenId }, 'Could not find pollen configuration');
-      return await i.reply({ ephemeral: true, content: `Could not find pollen configuration by id ${pollenId}` });
+      return await i.reply({ ephemeral: true, content: `Could not find pollen configuration with name ${pollenId}` });
     }
 
     const params = createParamSet(pollen, prompt);
     await i.reply('🐝');
-    await executePollenAndUpdateUI(pollen.id, params, i, prompt);
+    await executePollenAndUpdateUI(pollen, params, i, prompt);
     return true;
   }
 };
