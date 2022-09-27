@@ -69,3 +69,7 @@ export const buildMainEmbed = (
 export function createImageEmbed(title: string, imageUrl: string, url: string | null) {
   return new EmbedBuilder().setTitle(title.slice(0, 250)).setImage(imageUrl).setURL(url);
 }
+
+export const createVideoAttachments = async (videos: [string, string][] = []) => {
+  return Promise.all([...videos.map(downloadFile)]);
+};

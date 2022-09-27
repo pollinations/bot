@@ -1,45 +1,29 @@
 import { Data, runModelGenerator } from '@pollinations/ipfs/awsPollenRunner.js';
-import { ChatInputCommandInteraction, Message, MessagePayload } from 'discord.js';
 import _ from 'lodash';
-import type { PollenDefinition, PollenParamValue } from '../config/pollens.js';
-import type { Pollinator } from '../config/pollinators.js';
+import type { PollenParamValue } from '../config/pollens.js';
+import { POLLINATORS } from '../config/pollinators.js';
 import { ParsedPollinationsResponse, parsePollinationsResponse } from './parsePollinationsResponse.js';
+import type { Logger } from 'pino';
 
-export type ResponsePayloadBuilder = (
-  parsedData: ParsedPollinationsResponse | undefined,
-  on: 'init' | 'error' | 'update' | 'success'
-) => Promise<MessagePayload | false>;
+export type UpdateCallback = (parsedData: ParsedPollinationsResponse) => Promise<any>;
 
+const THROTTLE_INTERVAL_IN_MS = 5000;
 export async function executePollen(
-  pollen: PollenDefinition,
+  pollenId: string,
   params: Record<string, PollenParamValue>,
-  pollinator: Pollinator,
-  msgOrInteraction: Message | ChatInputCommandInteraction,
-  responsePayloadBuilder: ResponsePayloadBuilder
+  logger: Logger,
+  onUpdate: UpdateCallback
 ) {
-  const { logger } = msgOrInteraction;
-
-  // defined outside so we can keep achieved progress when sending error
-  let response: Message | undefined;
-  let data: ParsedPollinationsResponse | undefined;
   try {
-    logger.info({ pollenId: pollen.id, params, pollinator: pollinator.url }, 'Executing pollen');
-
-    // initial response
-    const payload = await responsePayloadBuilder(undefined, 'init');
-    if (payload) {
-      if (msgOrInteraction instanceof Message) response = await msgOrInteraction.reply(payload);
-      else response = await msgOrInteraction.channel?.send(payload);
-    }
+    const pollinator = POLLINATORS.find((p) => p.pollenId === pollenId)!;
+    logger.info({ pollenId, params, pollinator: pollinator.url }, 'Executing pollen');
 
     // throttled update of response
     const updateResponse = _.throttle(async (raw: Data) => {
-      data = parsePollinationsResponse(raw);
-      logger.debug({ outputCid: data.outputCid }, 'Updating response');
-
-      const payload = await responsePayloadBuilder(data, 'update');
-      if (payload) await response?.edit(payload);
-    }, 5000);
+      let parsed = parsePollinationsResponse(raw);
+      logger.debug({ outputCid: parsed.outputCid }, 'Updating response');
+      await onUpdate(parsed);
+    }, THROTTLE_INTERVAL_IN_MS);
 
     // main execution loop
     let counter = 0;
@@ -61,10 +45,6 @@ export async function executePollen(
     return;
   } catch (err) {
     logger.error(err, 'Unhandled exception while executing event');
-    if (response) {
-      // error response
-      const payload = await responsePayloadBuilder(data, 'error');
-      if (payload) await response.edit(payload);
-    }
+    throw err;
   }
 }
