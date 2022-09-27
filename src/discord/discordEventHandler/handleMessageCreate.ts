@@ -70,6 +70,5 @@ export const handleMessageCreate = async (...args: ClientEvents['messageCreate']
   msg.react('🐝');
   const responsePayloadBuilder = defaultResponsePayloadBuilder(pollen.displayName, prompt);
   await executePollen(pollen, params, pollinator, msg, responsePayloadBuilder);
-
   return true;
 };

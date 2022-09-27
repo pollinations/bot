@@ -33,7 +33,7 @@ client.on('interactionCreate', async (interaction) => {
     await handleInteractionCreate(interaction);
   } catch (err) {
     // top level catch
-    interaction.logger.error(err, 'Unhandled exception while executing event "messageCreate');
+    interaction.logger.error(err, 'Unhandled exception while executing event "messageCreate"');
     forceReplyToInteraction(interaction, 'An unexpected error occurred, please try again later');
   }
 });

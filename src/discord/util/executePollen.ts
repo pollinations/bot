@@ -1,14 +1,15 @@
 import { Data, runModelGenerator } from '@pollinations/ipfs/awsPollenRunner.js';
-import { ChatInputCommandInteraction, Interaction, InteractionResponse, Message, MessagePayload } from 'discord.js';
+import { ChatInputCommandInteraction, Message, MessagePayload } from 'discord.js';
 import _ from 'lodash';
 import type { PollenDefinition, PollenParamValue } from '../config/pollens.js';
 import type { Pollinator } from '../config/pollinators.js';
-import { defaultResponsePayloadBuilder } from './defaultResponsePayloadBuilder.js';
 import { ParsedPollinationsResponse, parsePollinationsResponse } from './parsePollinationsResponse.js';
+
 export type ResponsePayloadBuilder = (
   parsedData: ParsedPollinationsResponse | undefined,
   on: 'init' | 'error' | 'update' | 'success'
-) => MessagePayload | false;
+) => Promise<MessagePayload | false>;
+
 export async function executePollen(
   pollen: PollenDefinition,
   params: Record<string, PollenParamValue>,
@@ -25,7 +26,7 @@ export async function executePollen(
     logger.info({ pollenId: pollen.id, params, pollinator: pollinator.url }, 'Executing pollen');
 
     // initial response
-    const payload = responsePayloadBuilder(undefined, 'init');
+    const payload = await responsePayloadBuilder(undefined, 'init');
     if (payload) {
       if (msgOrInteraction instanceof Message) response = await msgOrInteraction.reply(payload);
       else response = await msgOrInteraction.channel?.send(payload);
@@ -36,7 +37,7 @@ export async function executePollen(
       data = parsePollinationsResponse(raw);
       logger.debug({ outputCid: data.outputCid }, 'Updating response');
 
-      const payload = responsePayloadBuilder(data, 'update');
+      const payload = await responsePayloadBuilder(data, 'update');
       if (payload) await response?.edit(payload);
     }, 5000);
 
@@ -44,7 +45,7 @@ export async function executePollen(
     let counter = 0;
     let outputCidLogged = false;
     for await (const raw of runModelGenerator(params, pollinator.url)) {
-      counter = counter++;
+      counter = counter + 1;
       // input cid on first response
       if (counter === 1) logger.info({ inputCid: raw.input_cid }, 'Got first response. IPFS Input is set up');
       if (!outputCidLogged && raw['.cid']) {
@@ -55,13 +56,14 @@ export async function executePollen(
       logger.debug(`[it ${counter}]: received data from backend`);
       await updateResponse(raw);
     }
+
     logger.info({ iterations: counter }, 'Pollination finished successfully');
     return;
   } catch (err) {
     logger.error(err, 'Unhandled exception while executing event');
     if (response) {
       // error response
-      const payload = responsePayloadBuilder(data, 'error');
+      const payload = await responsePayloadBuilder(data, 'error');
       if (payload) await response.edit(payload);
     }
   }

@@ -1,4 +1,6 @@
-import { ColorResolvable, EmbedBuilder } from 'discord.js';
+import { AttachmentBuilder, ColorResolvable, EmbedBuilder } from 'discord.js';
+import { downloadFile } from '../downloadFile.js';
+import type { ParsedPollinationsResponse } from '../parsePollinationsResponse.js';
 
 const STATUS = {
   0: {
@@ -25,20 +27,23 @@ const AUTHOR = {
   iconURL: 'https://pollinations.ai/favicon-32x32.png',
   url: 'https://pollinations.ai'
 };
+
 const buildEmbedUrl = (cid?: string) => (cid ? `https://pollinations.ai/p/${cid}` : null);
-export const buildDefaultResponseEmbeds = (
+
+export const buildDefaultResponsePayload = (
   title: string,
+  data?: ParsedPollinationsResponse,
   prompt?: string,
-  images: [string, string][] = [],
-  cid?: string,
   status: keyof typeof STATUS = 0
 ) => {
-  const url = buildEmbedUrl(cid);
+  const url = buildEmbedUrl(data?.outputCid);
   const mainEmbed = buildMainEmbed(title, url, prompt, status);
-  const imageEmbeds = images
-    .slice(-9)
-    .reverse()
-    .map(([_, imageUrl]) => createImageEmbed(title, imageUrl, url));
+  const imageEmbeds =
+    data?.images
+      .slice(-9)
+      .reverse()
+      .map(([_, imageUrl]) => createImageEmbed(title, imageUrl, url)) || [];
+
   return { mainEmbed, imageEmbeds };
 };
 
