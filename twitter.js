@@ -1,12 +1,12 @@
 import { TwitterApi } from 'twitter-api-v2';
 //import SocialPost from "social-post-api";
 import runModel from "@pollinations/ipfs/awsPollenRunner.js";
+import pollenStore from "@pollinations/ipfs/pollenStore.js";
 import fetch from "node-fetch";
 import readline from "readline-sync";
-import pollenStore from "@pollinations/ipfs/pollenStore.js";
-import credentials from "./credentials.js"
-import sleep from "await-sleep";
+import credentials from "./credentials.js";
 
+console.log("starting")
 
 
 const appCredentials = {
@@ -59,7 +59,7 @@ const userId = user.id;
 const userName = `@${user.username}`;
 
 // get the time 1 hour ago
-const anHourAgo = new Date().getTime() - (1000 * 60 * 60 * 4);
+const anHourAgo = new Date().getTime() - (1000 * 60 * 60 * 2);
 
 async function processMentions(lastTime=anHourAgo) {
     console.log("loading mentions from", lastTime)
@@ -108,13 +108,14 @@ async function createImageForMention({author_id, text, tweetText=null, id: tweet
 
     const inputs = {
         prompt: text,
+        num_frames_per_prompt: 1,
         seed: Math.round(Math.random() * 100000),
     };
 
     console.log("inputs", inputs);
 
     const outputs = await runModel(inputs, 
-        "614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/latent-diffusion-400m"
+        "614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/pimped-diffusion"
     );
 
     //console.log("outputs", outputs[".cid"], ,Object.entries(outputs.output))
@@ -128,7 +129,7 @@ async function createImageForMention({author_id, text, tweetText=null, id: tweet
     
     if (!filenameAndURL) {
         console.error("no filenameAndURL. skipping");
-        return;
+        return false;
     }
 
     const [filename, url] = filenameAndURL;
@@ -187,17 +188,17 @@ async function writeIdToRecord(id) {
 async function createBioPortrait(userId) {
     const {data:user} = await twitter.user(userId, {"user.fields":"description"});
     console.log("user", user)
-    await createImageForMention({author_id: userId, 
-    //    text: ` ${user.name} ${user.description}. Vibrant conceptual art.`,
-    text: `a stunning portrait photo of ${user.name} ${user.description}. By Steve McCurry `,
-        tweetText: `"Portrait of ${user.name} ${user.description}". \n\nFollow @pollinations_ai to receive your #myAIportrait`})
+    return await createImageForMention({author_id: userId, 
+      text: `Avatar for ${user.name} ${user.description}`,
+      //text: `a stunning portrait photo of ${user.name} ${user.description}. By Steve McCurry `,
+        tweetText: `"Portrait of ${user.name} ${user.description}". \n\n#myAIportrait`})
 }
 
 //processMentions()   
 
 // const { data: caroline } = await twitter.userByUsername('killy44', {"user.fields":"description"});
 // // //console.log(follower
-// createBioPortrait(caroline.id);
+// createBioPortrait("1448319808832000005");
 
 
 let count=0;
@@ -222,15 +223,9 @@ async function processBios() {
             //await writeIdToRecord(follower.id)
             //const response = readline.question("create portrait?")
             //if (response ==="yes")
-            try {
-                await createBioPortrait(follower.id)
-                await writeIdToRecord(follower.id)
-            } catch (e) {
-                console.error("error", e)
-                // print stack trace
-                console.error(e.stack)
-                await sleep(1000 * 20)
-            }
+            const success = await createBioPortrait(follower.id)
+            if (success)
+              await writeIdToRecord(follower.id)
         }
         //console.log("NEXT!!!")
         //await timeline.fetchNext()
@@ -240,4 +235,4 @@ async function processBios() {
 
 processBios()
 
-processMentions()  
+processMentions() 
