@@ -6,7 +6,7 @@ import { isPrimaryPromptParam } from '../util/promptParamHandling.js';
 import { POLLINATORS } from '../config/pollinators.js';
 import _ from 'lodash';
 import { executePollen } from '../util/executePollen.js';
-import { defaultResponsePayloadBuilder } from '../util/defaultResponsePayloadBuilder.js';
+import { defaultResponsePayloadBuilder } from '../util/discord.js/defaultResponsePayloadBuilder.js';
 const channelNames = Object.keys(CHANNEL_CONFIG);
 
 const clickableChannelIDs = channelNames

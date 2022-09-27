@@ -1,6 +1,6 @@
-import { buildDefaultResponsePayload, buildMainEmbed } from './discord.js/embeds.js';
-import { downloadFile } from './downloadFile.js';
-import type { ResponsePayloadBuilder } from './executePollen.js';
+import { buildDefaultResponsePayload, buildMainEmbed } from './embeds.js';
+import { downloadFile } from '../downloadFile.js';
+import type { ResponsePayloadBuilder } from '../executePollen.js';
 
 export const defaultResponsePayloadBuilder = (title: string, prompt?: string) =>
   (async (data, on) => {

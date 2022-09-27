@@ -5,7 +5,7 @@ import type { Command } from '../../config/commands.js';
 import { executePollen } from '../../util/executePollen.js';
 import { exitInteraction, EXIT_REASONS } from '../pollination/shared/errorHandler.js';
 import { POLLINATORS } from '../../config/pollinators.js';
-import { defaultResponsePayloadBuilder } from '../../util/defaultResponsePayloadBuilder.js';
+import { defaultResponsePayloadBuilder } from '../../util/discord.js/defaultResponsePayloadBuilder.js';
 
 const CreateCommand: Command<ChatInputCommandInteraction> = {
   data: {

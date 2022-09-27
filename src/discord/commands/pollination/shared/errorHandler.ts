@@ -1,7 +1,7 @@
 import type { PollenParamDefinition } from '../../../config/pollens.js';
 import type { Level } from 'pino';
 import type { Interaction, Message } from 'discord.js';
-import { forceReplyToInteraction } from '../../../util/forceReplyTo.js';
+import { forceReplyToInteraction } from '../../../util/discord.js/forceReplyTo.js';
 export interface ExitReason {
   log?: string;
   discord?: string;

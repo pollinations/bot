@@ -6,7 +6,7 @@ import logger from './logger.js';
 // events
 import { handleMessageCreate } from './discordEventHandler/handleMessageCreate.js';
 import { handleInteractionCreate } from './discordEventHandler/handleInteractionCreate.js';
-import { forceReplyToInteraction } from './util/forceReplyTo.js';
+import { forceReplyToInteraction } from './util/discord.js/forceReplyTo.js';
 
 const token = process.env['DISCORD_TOKEN'];
 
