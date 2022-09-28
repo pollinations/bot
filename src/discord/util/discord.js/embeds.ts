@@ -63,7 +63,7 @@ export const buildMainEmbed = (options: MainEmbedOptions) => {
   const eb = new EmbedBuilder()
     .setTitle(title || 'Your Pollination')
     .setURL(url || null)
-    // .setDescription(description || null)
+    .setDescription(description || null)
     .setAuthor(AUTHOR)
     // .setThumbnail(thumbnailUrl || null)
     .setColor(status.color as ColorResolvable)

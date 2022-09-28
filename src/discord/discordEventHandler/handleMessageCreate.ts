@@ -44,9 +44,8 @@ export const handleMessageCreate = async (...args: ClientEvents['messageCreate']
   const overrides = createImplicitParamOverrides(pollen, prompt, images);
   const params = createParamSet(pollen, overrides);
   const missingRequiredParams = findMissingRequiredParams(pollen, params).map((p) => p.displayName || p.name);
-  console.log(missingRequiredParams);
 
-  if (missingRequiredParams) {
+  if (missingRequiredParams.length > 0) {
     logger.warn({ missingRequiredParams }, 'Missing required params');
     return await msg.reply({
       content: `Missing required params: ${missingRequiredParams.join(', ')}`

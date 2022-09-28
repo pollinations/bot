@@ -68,7 +68,8 @@ const CreateCommand: Command<ChatInputCommandInteraction> = {
     const overrides = createImplicitParamOverrides(pollen, prompt);
     const params = createParamSet(pollen, overrides);
     const missingRequiredParams = findMissingRequiredParams(pollen, params).map((p) => p.displayName);
-    if (missingRequiredParams) {
+
+    if (missingRequiredParams.length > 0) {
       logger.warn({ missingRequiredParams }, 'Missing required params');
       return await i.reply({
         ephemeral: true,
