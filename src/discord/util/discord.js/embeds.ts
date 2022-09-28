@@ -2,6 +2,7 @@ import { ColorResolvable, EmbedBuilder } from 'discord.js';
 import type { PollenOutputDescriptor } from '../../config/pollens.js';
 import { downloadFile } from '../downloadFile.js';
 import type { ParsedPollinationsResponse } from '../parsePollinationsResponse.js';
+import type { PollenSpecificEmbedModifier } from './pollenEmbedHelpers.js';
 
 const STATUS = {
   0: {
@@ -32,16 +33,21 @@ const AUTHOR = {
 
 const buildEmbedUrl = (cid?: string) => cid && `https://pollinations.ai/p/${cid}`;
 
-export const buildDefaultResponsePayload = (options: MainEmbedOptions, data?: ParsedPollinationsResponse) => {
+export const buildDefaultResponsePayload = (
+  options: MainEmbedOptions,
+  data?: ParsedPollinationsResponse,
+  mainEmbedModifer?: PollenSpecificEmbedModifier
+) => {
   const url = buildEmbedUrl(data?.outputCid);
 
-  const mainEmbed = buildMainEmbed({ ...options, url, statusMessage: data?.status.pop()?.title });
+  const mainEmbed = buildMainEmbed({ ...options, url });
+  const modifiedMain = mainEmbedModifer ? mainEmbedModifer(mainEmbed, data) : mainEmbed;
   const { outputs: outputDescriptors } = options;
   const imageOutput = outputDescriptors?.find((o) => o.type === 'image');
   let filtered = filterOutputAssets(data?.images || [], imageOutput);
   const imageEmbeds = filtered.map(([_, imageUrl]) => createImageEmbed(options.title, imageUrl, url)) || [];
 
-  return { mainEmbed, imageEmbeds };
+  return { mainEmbed: modifiedMain, imageEmbeds };
 };
 export interface MainEmbedOptions {
   title: string;
@@ -49,13 +55,12 @@ export interface MainEmbedOptions {
   url?: string | undefined;
   prompt: string | undefined;
   statusCode?: keyof typeof STATUS;
-  statusMessage?: string | undefined;
   thumbnailUrl?: string | undefined;
   description?: string | undefined;
   fields?: { label: string; value: string }[];
 }
 export const buildMainEmbed = (options: MainEmbedOptions) => {
-  const { title, url, description, statusMessage, fields, prompt, statusCode = 0, thumbnailUrl } = options;
+  const { title, url, description, fields, prompt, statusCode = 0, thumbnailUrl } = options;
   let status = STATUS[statusCode];
   const promptValue = prompt && (prompt.length > 1024 ? prompt.slice(0, 1021) + '...' : prompt);
   // const imageLinks =
@@ -71,7 +76,7 @@ export const buildMainEmbed = (options: MainEmbedOptions) => {
 
   if (fields) eb.addFields(fields.map(({ label, value }) => ({ name: label, value })));
   if (promptValue) eb.addFields([{ name: 'Prompt', value: promptValue }]);
-  eb.addFields([{ name: 'Status', value: statusMessage || status.label, inline: true }]).setTimestamp();
+  eb.addFields([{ name: 'Status', value: status.label, inline: true }]).setTimestamp();
   return eb;
 };
 export function createImageEmbed(title: string, imageUrl: string, url?: string) {
@@ -82,11 +87,14 @@ export function createImageEmbed(title: string, imageUrl: string, url?: string) 
 }
 const filterOutputAssets = (assets: [string, string][], outputDef?: PollenOutputDescriptor) => {
   if (!outputDef) return [];
+  // set reverse to true by default
+  const reverse = outputDef.reverse === undefined ? true : outputDef.reverse;
   let filtered = [];
   if (outputDef.filename) {
     const file = assets.find(([filename]) => filename === outputDef.filename);
     filtered = file ? [file] : [];
-  } else filtered = assets.slice(-(outputDef?.lastXFiles || 9)).reverse();
+  } else filtered = assets.slice(-(outputDef?.lastXFiles || 9));
+  if (reverse) filtered.reverse();
   return filtered;
 };
 export const createVideoAttachments = async (

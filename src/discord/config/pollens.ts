@@ -43,6 +43,7 @@ export interface PollenOutputDescriptor {
   description?: string;
   lastXFiles?: number; // temporary property
   filename?: string;
+  reverse?: boolean; //default is true
 }
 
 export interface PollenDefinition {
@@ -256,11 +257,11 @@ export const POLLENS: PollenDefinition[] = [
         name: 'prompt',
         xOrder: 0,
         required: true,
-        displayName: 'Prompt',
+        displayName: 'Unpimped prompt',
         isPrimaryTextPrompt: true
       }
     ],
-    outputs: [{ type: 'image' }]
+    outputs: [{ type: 'image', reverse: false }]
   },
   {
     id: 'photo3d',

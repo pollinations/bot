@@ -6,6 +6,7 @@ import {
   createVideoAttachments,
   MainEmbedOptions
 } from './discord.js/embeds.js';
+import { EMBED_HELPERS } from './discord.js/pollenEmbedHelpers.js';
 import { type UpdateCallback, executePollen } from './executePollen.js';
 import type { ParsedPollinationsResponse } from './parsePollinationsResponse.js';
 
@@ -26,10 +27,11 @@ export const executePollenAndUpdateUI = async (
     outputs: pollen.outputs
   };
 
+  const pollenEmbedModifier = EMBED_HELPERS[pollen.id];
+
   // send main response, the response object will be reused when intermeidate updates are received
   const payload = { embeds: [buildMainEmbed({ ...staticEmbedOptions })] };
   let response = iOrMsg instanceof Message ? await iOrMsg.reply(payload) : await iOrMsg.channel!.send(payload);
-
   try {
     const handleUpdate: UpdateCallback = async (data) => {
       lastUpdate = data;
@@ -38,7 +40,8 @@ export const executePollenAndUpdateUI = async (
           ...staticEmbedOptions,
           statusCode: data.success ? 2 : 1
         },
-        data
+        data,
+        pollenEmbedModifier
       );
       const files = await createVideoAttachments(data.videos, pollen.outputs);
       response.edit({ embeds: [mainEmbed, ...imageEmbeds], files });
@@ -48,7 +51,8 @@ export const executePollenAndUpdateUI = async (
     if (response) {
       const { mainEmbed, imageEmbeds } = buildDefaultResponsePayload(
         { ...staticEmbedOptions, statusCode: 3 },
-        lastUpdate
+        lastUpdate,
+        pollenEmbedModifier
       );
       const files = await createVideoAttachments(lastUpdate?.videos || [], pollen.outputs);
       await response.edit({ embeds: [mainEmbed, ...imageEmbeds], files });
