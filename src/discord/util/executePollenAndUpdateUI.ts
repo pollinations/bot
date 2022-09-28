@@ -22,8 +22,11 @@ export const executePollenAndUpdateUI = async (
     title,
     prompt,
     description: pollen.description,
-    thumbnailUrl: pollen.thumbnailUrl
+    thumbnailUrl: pollen.thumbnailUrl,
+    outputs: pollen.outputs
   };
+
+  // send main response, the response object will be reused when intermeidate updates are received
   const payload = { embeds: [buildMainEmbed({ ...staticEmbedOptions })] };
   let response = iOrMsg instanceof Message ? await iOrMsg.reply(payload) : await iOrMsg.channel!.send(payload);
 
@@ -37,7 +40,7 @@ export const executePollenAndUpdateUI = async (
         },
         data
       );
-      const files = await createVideoAttachments(data.videos);
+      const files = await createVideoAttachments(data.videos, pollen.outputs);
       response.edit({ embeds: [mainEmbed, ...imageEmbeds], files });
     };
     await executePollen(pollen.id, params, iOrMsg.logger, handleUpdate);
@@ -47,7 +50,7 @@ export const executePollenAndUpdateUI = async (
         { ...staticEmbedOptions, statusCode: 3 },
         lastUpdate
       );
-      const files = await createVideoAttachments(lastUpdate?.videos);
+      const files = await createVideoAttachments(lastUpdate?.videos || [], pollen.outputs);
       await response.edit({ embeds: [mainEmbed, ...imageEmbeds], files });
     }
   }

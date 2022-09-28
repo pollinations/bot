@@ -1,4 +1,4 @@
-type AssetType = 'image' | 'video' | '3d'; // IPFS Media Assets
+export type AssetType = 'image' | 'video' | '3d'; // IPFS Media Assets
 
 type PrimitiveType = 'text' | 'number' | 'boolean';
 
@@ -10,7 +10,7 @@ export type PollenParamDefinition = {
   defaultValue?: string | number | boolean;
   xOrder?: number;
 } & (
-  | { type: AssetType }
+  | { type: AssetType; lastXFiles?: number; filename?: string; allowedExts?: string[] }
   | {
       type: 'number';
       min?: number;
@@ -35,14 +35,14 @@ export type PollenParamDefinition = {
         minRatio?: number;
         maxRatio?: number;
       };
-      allowedFormats?: string[];
     }
 );
 export type PollenParamValue = string | number | boolean | undefined; // is ipfs contentId as string for ipfs assets
-interface PollenOutputDescriptor {
+export interface PollenOutputDescriptor {
   type: PrimitiveType | AssetType;
   description?: string;
-  numImages?: number; // temporary property
+  lastXFiles?: number; // temporary property
+  filename?: string;
 }
 
 export interface PollenDefinition {
@@ -174,7 +174,8 @@ export const POLLENS: PollenDefinition[] = [
     ],
     outputs: [
       {
-        type: 'image'
+        type: 'image',
+        lastXFiles: 1
       }
     ]
   },
@@ -193,7 +194,8 @@ export const POLLENS: PollenDefinition[] = [
     ],
     outputs: [
       {
-        type: 'image'
+        type: 'image',
+        lastXFiles: 1
       }
     ]
   },
@@ -212,7 +214,8 @@ export const POLLENS: PollenDefinition[] = [
     ],
     outputs: [
       {
-        type: 'image'
+        type: 'image',
+        lastXFiles: 1
       }
     ]
   },
@@ -234,27 +237,10 @@ export const POLLENS: PollenDefinition[] = [
     outputs: [
       {
         type: 'image',
-        numImages: 4
+        filename: 'z_3dphoto_out.mp4'
       },
       {
         type: 'video'
-      }
-    ]
-  },
-  {
-    id: 'photo3d',
-    model: 'photo3d',
-    displayName: 'Photo3D',
-    params: [
-      {
-        type: 'image',
-        name: 'image'
-      }
-    ],
-    outputs: [
-      {
-        type: '3d',
-        description: '3D model of the scene'
       }
     ]
   },
@@ -275,10 +261,28 @@ export const POLLENS: PollenDefinition[] = [
       }
     ],
     outputs: [{ type: 'image' }]
+  },
+  {
+    id: 'photo3d',
+    description: 'Turns an image into an animated 3D scene by hallucinating colors and structures',
+    displayName: 'Photo3D (AdaMPI)',
+    thumbnailUrl: 'https://ipfs.pollinations.ai/ipfs/QmRoS2EF2WcHqhXKmzUszw4vkGSsjXuenDcyXd9ugSVEFj',
+    model: 'photo3d',
+    params: [
+      {
+        type: 'image',
+        name: 'image',
+        displayName: 'Image',
+        xOrder: 0,
+        required: true
+      }
+    ],
+    outputs: [
+      {
+        type: 'video',
+        description: 'A rendered video of a generated 3D model of the input scene',
+        filename: 'z_3dphoto_out.mp4'
+      }
+    ]
   }
-  // {
-  //   name: 'photo3d',
-  //   displayName: 'Photo3D',
-  //   computeUrl: '614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/adampi'
-  // }
 ];

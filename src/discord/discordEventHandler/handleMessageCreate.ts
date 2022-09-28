@@ -1,10 +1,12 @@
-import type { ClientEvents, GuildTextBasedChannel, Message } from 'discord.js';
+import { ALLOWED_EXTENSIONS, ClientEvents, GuildTextBasedChannel } from 'discord.js';
 import { CHANNEL_CONFIG } from '../config/channels.js';
 import { parseTextWithBotMention } from '../util/discord.js/parseTextWithBotMention.js';
 import _ from 'lodash';
 import { executePollenAndUpdateUI } from '../util/executePollenAndUpdateUI.js';
 import { createParamSet } from '../util/createParamSet.js';
 import { getPollenFromChannelName } from '../util/getPollenByChannelName.js';
+import { createImplicitParamOverrides } from '../util/createImplicitParamOverrides.js';
+import { findMissingRequiredParams } from '../util/findMissingRequiredParams.js';
 const channelNames = Object.keys(CHANNEL_CONFIG);
 
 const clickableChannelIDs = channelNames
@@ -18,8 +20,7 @@ export const handleMessageCreate = async (...args: ClientEvents['messageCreate']
   const { restOfMessage: prompt } = parseTextWithBotMention(msg.content);
   const channelName = (msg.channel as GuildTextBasedChannel).name;
   const pollen = getPollenFromChannelName(channelName);
-  const attachments = msg.attachments.map((a) => a.url);
-
+  const images = msg.attachments.filter((a) => ALLOWED_EXTENSIONS.some((ext) => a.url.endsWith(ext))).map((a) => a.url);
   // return if channel is not configured
   if (!pollen) {
     logger.info({ channelName }, 'Could not find pollen configuration');
@@ -36,13 +37,23 @@ export const handleMessageCreate = async (...args: ClientEvents['messageCreate']
       pollenId: pollen.id,
       channelName,
       prompt,
-      attachments
+      images
     },
     `Got dm`
   );
+  const overrides = createImplicitParamOverrides(pollen, prompt, images);
+  const params = createParamSet(pollen, overrides);
+  const missingRequiredParams = findMissingRequiredParams(pollen, params).map((p) => p.displayName || p.name);
+  console.log(missingRequiredParams);
 
-  const params = createParamSet(pollen, prompt);
+  if (missingRequiredParams) {
+    logger.warn({ missingRequiredParams }, 'Missing required params');
+    return await msg.reply({
+      content: `Missing required params: ${missingRequiredParams.join(', ')}`
+    });
+  }
   await msg.react('🐝');
+
   await executePollenAndUpdateUI(pollen, params, msg, prompt);
   return true;
 };

@@ -4,6 +4,7 @@ const IMAGE_EXT = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.tiff', '.
 const VIDEO_EXT = ['.mp4', '.webm', '.mov', '.avi', '.wmv', '.flv', '.mkv', '.mpg', '.mpeg'];
 
 export interface ParsedPollinationsResponse {
+  inputCid: string;
   outputCid: string | undefined;
   images: [string, string][];
   videos: [string, string][];
@@ -32,6 +33,7 @@ export const parsePollinationsResponse = (raw: Data): ParsedPollinationsResponse
   const status = output ? getPollenStatus(output.log) : [];
 
   return {
+    inputCid: raw.input_cid,
     outputCid,
     images,
     videos,

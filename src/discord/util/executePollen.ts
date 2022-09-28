@@ -32,6 +32,7 @@ export async function executePollen(
     for await (const raw of runModelGenerator(params, pollinator.url)) {
       counter = counter + 1;
       // input cid on first response
+      if (raw.output?.success === false) throw Error('Failed pollen');
       if (counter === 1) logger.info({ inputCid: raw.input_cid }, 'Got first response. IPFS Input is set up');
       if (!outputCidLogged && raw['.cid']) {
         // log outputCid only once as soon as it is available

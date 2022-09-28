@@ -10,6 +10,8 @@ import type { Command } from '../../config/commands.js';
 import { executePollenAndUpdateUI } from '../../util/executePollenAndUpdateUI.js';
 import { createParamSet } from '../../util/createParamSet.js';
 import { getPollenFromChannelName } from '../../util/getPollenByChannelName.js';
+import { createImplicitParamOverrides } from '../../util/createImplicitParamOverrides.js';
+import { findMissingRequiredParams } from '../../util/findMissingRequiredParams.js';
 
 const CreateCommand: Command<ChatInputCommandInteraction> = {
   data: {
@@ -63,7 +65,17 @@ const CreateCommand: Command<ChatInputCommandInteraction> = {
       return await i.reply({ ephemeral: true, content: `Could not find pollen configuration with name ${pollenId}` });
     }
 
-    const params = createParamSet(pollen, prompt);
+    const overrides = createImplicitParamOverrides(pollen, prompt);
+    const params = createParamSet(pollen, overrides);
+    const missingRequiredParams = findMissingRequiredParams(pollen, params).map((p) => p.displayName);
+    if (missingRequiredParams) {
+      logger.warn({ missingRequiredParams }, 'Missing required params');
+      return await i.reply({
+        ephemeral: true,
+        content: `Missing required params: ${missingRequiredParams.join(', ')}`
+      });
+    }
+
     await i.reply('🐝');
     await executePollenAndUpdateUI(pollen, params, i, prompt);
     return true;

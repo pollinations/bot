@@ -1,4 +1,5 @@
-import { AttachmentBuilder, ColorResolvable, EmbedBuilder } from 'discord.js';
+import { ColorResolvable, EmbedBuilder } from 'discord.js';
+import type { PollenOutputDescriptor } from '../../config/pollens.js';
 import { downloadFile } from '../downloadFile.js';
 import type { ParsedPollinationsResponse } from '../parsePollinationsResponse.js';
 
@@ -33,17 +34,18 @@ const buildEmbedUrl = (cid?: string) => cid && `https://pollinations.ai/p/${cid}
 
 export const buildDefaultResponsePayload = (options: MainEmbedOptions, data?: ParsedPollinationsResponse) => {
   const url = buildEmbedUrl(data?.outputCid);
+
   const mainEmbed = buildMainEmbed({ ...options, url, statusMessage: data?.status.pop()?.title });
-  const imageEmbeds =
-    data?.images
-      .slice(-9)
-      .reverse()
-      .map(([_, imageUrl]) => createImageEmbed(options.title, imageUrl, url)) || [];
+  const { outputs: outputDescriptors } = options;
+  const imageOutput = outputDescriptors?.find((o) => o.type === 'image');
+  let filtered = filterOutputAssets(data?.images || [], imageOutput);
+  const imageEmbeds = filtered.map(([_, imageUrl]) => createImageEmbed(options.title, imageUrl, url)) || [];
 
   return { mainEmbed, imageEmbeds };
 };
 export interface MainEmbedOptions {
   title: string;
+  outputs: PollenOutputDescriptor[];
   url?: string | undefined;
   prompt: string | undefined;
   statusCode?: keyof typeof STATUS;
@@ -78,7 +80,31 @@ export function createImageEmbed(title: string, imageUrl: string, url?: string) 
     .setImage(imageUrl)
     .setURL(url || null);
 }
+const filterOutputAssets = (assets: [string, string][], outputDef?: PollenOutputDescriptor) => {
+  if (!outputDef) return [];
+  let filtered = [];
+  if (outputDef.filename) {
+    const file = assets.find(([filename]) => filename === outputDef.filename);
+    filtered = file ? [file] : [];
+  } else filtered = assets.slice(-(outputDef?.lastXFiles || 9)).reverse();
+  return filtered;
+};
+export const createVideoAttachments = async (
+  videos: [string, string][],
+  outputDescriptors: PollenOutputDescriptor[]
+) => {
+  const videoOutput = outputDescriptors?.find((o) => o.type === 'video');
+  const filtered = filterOutputAssets(videos, videoOutput);
+  return Promise.all([...filtered.map(downloadFile)]);
+};
 
-export const createVideoAttachments = async (videos: [string, string][] = []) => {
-  return Promise.all([...videos.map(downloadFile)]);
+export const createInputMediaEmbed = (inputUrl: string, imageUrl: string) => {
+  return new EmbedBuilder()
+    .setTitle('Input Media')
+    .setAuthor(AUTHOR)
+    .setURL(inputUrl)
+    .setDescription('The media you provided to the pollination')
+    .setColor('Green')
+    .setFooter({ text: 'Powered by pollinations.ai', iconURL: ICON_URL })
+    .setImage(imageUrl);
 };
