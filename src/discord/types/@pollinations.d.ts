@@ -11,7 +11,7 @@ declare module '@pollinations/ipfs/awsPollenRunner.js' {
       [key: string]: IPFSValue;
     };
     input_cid: string;
-    output: {
+    output?: {
       done: boolean;
       log: string;
       time_start: number;

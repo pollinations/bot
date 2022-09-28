@@ -12,22 +12,31 @@ export interface ParsedPollinationsResponse {
 }
 export const parsePollinationsResponse = (raw: Data): ParsedPollinationsResponse => {
   const { output } = raw;
-  const { success } = output;
   const outputCid = raw['.cid'];
   // filter out non-image outputs
-  const images = Object.entries(output).filter(
-    ([key, value]) => IMAGE_EXT.some((ext) => key.endsWith(ext)) && typeof value === 'string'
+  const images = (
+    output
+      ? Object.entries(output).filter(
+          ([key, value]) => IMAGE_EXT.some((ext) => key.endsWith(ext)) && typeof value === 'string'
+        )
+      : []
   ) as [string, string][];
-  const videos = Object.entries(output).filter(
-    ([key, value]) => VIDEO_EXT.some((ext) => key.endsWith(ext)) && typeof value === 'string'
+  const videos = (
+    output
+      ? Object.entries(output).filter(
+          ([key, value]) => VIDEO_EXT.some((ext) => key.endsWith(ext)) && typeof value === 'string'
+        )
+      : []
   ) as [string, string][];
+
+  const status = output ? getPollenStatus(output.log) : [];
 
   return {
     outputCid,
     images,
     videos,
-    success,
-    status: getPollenStatus(output.log)
+    success: output?.success || false,
+    status
   };
 };
 
