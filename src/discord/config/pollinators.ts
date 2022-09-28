@@ -28,5 +28,13 @@ export const POLLINATORS: Pollinator[] = [
   {
     pollenId: 'stable-diffusion',
     url: '614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/stable-diffusion-private'
+  },
+  {
+    pollenId: 'photo3d',
+    url: '614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/adampi'
+  },
+  {
+    pollenId: 'pimped-diffusion',
+    url: '614871946825.dkr.ecr.us-east-1.amazonaws.com/pollinations/pimped-diffusion'
   }
 ];

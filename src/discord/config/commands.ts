@@ -1,11 +1,24 @@
-import type { APIApplicationCommand, ChatInputCommandInteraction } from 'discord.js';
-import CreateCommand from '../commands/create.js';
+import type {
+  APIApplicationCommand,
+  APIApplicationCommandSubcommandOption,
+  ApplicationCommandType,
+  AutocompleteInteraction,
+  Interaction
+} from 'discord.js';
+import CreateCommand from '../commands/create/index.js';
 
 // https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
-export interface Command {
-  data: Omit<APIApplicationCommand, 'id' | 'default_member_permissions' | 'application_id' | 'version'>;
-  execute: (interaction: ChatInputCommandInteraction) => Promise<any>;
+export interface Command<InteractionType extends Interaction> {
+  data: Omit<APIApplicationCommand, 'id' | 'default_member_permissions' | 'application_id' | 'version'> & {
+    type: ApplicationCommandType;
+  };
+  autoCompleteHandler?: (interaction: AutocompleteInteraction) => Promise<any>;
+  execute: (interaction: InteractionType) => Promise<any>;
+}
+
+export interface Subcommand<InteractionType extends Interaction> extends Omit<Command<InteractionType>, 'data'> {
+  data: APIApplicationCommandSubcommandOption;
 }
 
 // Register all commands to be used here
-export const COMMANDS: Command[] = [CreateCommand];
+export const COMMANDS: Command<any>[] = [CreateCommand];

@@ -1,7 +1,10 @@
 import type { ModalSubmitInteraction } from 'discord.js';
-import type { PollenParam, PollenParamValue } from '../../config/pollens.js';
+import type { PollenParamDefinition, PollenParamValue } from '../../config/pollens.js';
 
-export const parseModalFieldsAsParams = (submitted: ModalSubmitInteraction, availableParams: PollenParam[]) => {
+export const parseModalFieldsAsParams = (
+  submitted: ModalSubmitInteraction,
+  availableParams: PollenParamDefinition[]
+) => {
   return submitted.fields.fields.reduce((curr, input) => {
     const config = availableParams.find((p) => p.name === input.customId)!;
     const value = parseInputParamString(config, input.value);
@@ -10,7 +13,7 @@ export const parseModalFieldsAsParams = (submitted: ModalSubmitInteraction, avai
   }, {} as Record<string, PollenParamValue>);
 };
 
-const parseInputParamString = (param: PollenParam, value: string): PollenParamValue => {
+const parseInputParamString = (param: PollenParamDefinition, value: string): PollenParamValue => {
   switch (param.type) {
     case 'number':
       return parseFloat(value);
