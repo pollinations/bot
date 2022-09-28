@@ -8,6 +8,7 @@ export interface ParsedPollinationsResponse {
   images: [string, string][];
   videos: [string, string][];
   success: boolean;
+  status: any[];
 }
 export const parsePollinationsResponse = (raw: Data): ParsedPollinationsResponse => {
   const { output } = raw;
@@ -25,6 +26,19 @@ export const parsePollinationsResponse = (raw: Data): ParsedPollinationsResponse
     outputCid,
     images,
     videos,
-    success
+    success,
+    status: getPollenStatus(output.log)
   };
 };
+
+const getPollenStatus = (log?: string) => {
+  if (!log) return [];
+  return (
+    log
+      .split('\n')
+      .filter((line) => line?.startsWith('pollen_status:'))
+      .map(removePrefix) || []
+  );
+};
+
+const removePrefix = (statusWithPrefix: string): string => JSON.parse(statusWithPrefix.replace('pollen_status: ', ''));

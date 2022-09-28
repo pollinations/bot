@@ -33,7 +33,7 @@ const buildEmbedUrl = (cid?: string) => cid && `https://pollinations.ai/p/${cid}
 
 export const buildDefaultResponsePayload = (options: MainEmbedOptions, data?: ParsedPollinationsResponse) => {
   const url = buildEmbedUrl(data?.outputCid);
-  const mainEmbed = buildMainEmbed({ ...options, url });
+  const mainEmbed = buildMainEmbed({ ...options, url, statusMessage: data?.status.pop()?.title });
   const imageEmbeds =
     data?.images
       .slice(-9)
@@ -47,11 +47,13 @@ export interface MainEmbedOptions {
   url?: string | undefined;
   prompt: string | undefined;
   statusCode?: keyof typeof STATUS;
+  statusMessage?: string | undefined;
   thumbnailUrl?: string | undefined;
   description?: string | undefined;
+  fields?: { label: string; value: string }[];
 }
 export const buildMainEmbed = (options: MainEmbedOptions) => {
-  const { title, url, description, prompt, statusCode = 0, thumbnailUrl } = options;
+  const { title, url, description, statusMessage, fields, prompt, statusCode = 0, thumbnailUrl } = options;
   let status = STATUS[statusCode];
   const promptValue = prompt && (prompt.length > 1024 ? prompt.slice(0, 1021) + '...' : prompt);
   // const imageLinks =
@@ -64,8 +66,10 @@ export const buildMainEmbed = (options: MainEmbedOptions) => {
     // .setThumbnail(thumbnailUrl || null)
     .setColor(status.color as ColorResolvable)
     .setFooter({ text: 'Powered by pollinations.ai', iconURL: ICON_URL });
+
+  if (fields) eb.addFields(fields.map(({ label, value }) => ({ name: label, value })));
   if (promptValue) eb.addFields([{ name: 'Prompt', value: promptValue }]);
-  eb.addFields([{ name: 'Status', value: status.label, inline: true }]).setTimestamp();
+  eb.addFields([{ name: 'Status', value: statusMessage || status.label, inline: true }]).setTimestamp();
   return eb;
 };
 export function createImageEmbed(title: string, imageUrl: string, url?: string) {
