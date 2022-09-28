@@ -1,6 +1,6 @@
 export interface ChannelConfig {
   pollenId: string;
-  channelId: string;
+  channelId?: string;
 }
 
 export const CHANNEL_CONFIG: Record<string, ChannelConfig> = {
@@ -31,6 +31,9 @@ export const CHANNEL_CONFIG: Record<string, ChannelConfig> = {
   'stable-diffusion': {
     pollenId: 'stable-diffusion',
     channelId: '1011335962007175198'
+  },
+  'pimped-diffusion': {
+    pollenId: 'pimped-diffusion'
   }
 };
 
