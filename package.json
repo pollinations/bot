@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Pollinations' Discord Bot",
   "scripts": {
-    "start": "npm run build && node -r dotenv/config dist/discord/index.js dotenv_config_path=.env.production.local",
+    "start": "node -r dotenv/config dist/discord/index.js dotenv_config_path=.env.production.local",
     "dev": "NODE_ENV=development nodemon -r dotenv/config src/discord/index.ts dotenv_config_path=.env.local | npx pino-pretty",
     "build": "tsc",
     "deploy-commands": "ts-node --experimental-specifier-resolution=node -r dotenv/config src/discord/deployCommands.ts dotenv_config_path=.env.production.local",
