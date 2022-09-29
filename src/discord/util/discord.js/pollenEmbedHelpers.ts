@@ -11,26 +11,26 @@ export const EMBED_HELPERS: Record<string, PollenSpecificEmbedModifier> = {
     const latestStatus = data?.status.pop();
     if (latestStatus) {
       const pimpedPrompts = (latestStatus.payload as string).split('\n');
-      const markdown = pimpedPrompts
-        .map((p, i) => {
-          let suffix = '';
-          if (i >= numImages) {
-            suffix = bold('(not rendered)');
-          } else {
-            const image = data?.images[i];
-            suffix = image ? `[${hyperlink('link', image[1] as string)}]` : '';
-          }
-          return `${i + 1}. ${p} ${suffix}`;
-        })
-        .join('\n\n');
+      const markdowns = pimpedPrompts.map((p, i) => {
+        let suffix = '';
+        const shortened = p.length > 850 ? p.slice(0, 859) + '...' : p;
+        if (i >= numImages) {
+          suffix = bold('(not rendered)');
+        } else {
+          const image = data?.images[i];
+          suffix = image ? `[${hyperlink('link', image[1] as string)}]` : '';
+        }
+        return `${i + 1}. ${shortened} ${suffix}`;
+      });
 
       const fields = eb.data.fields || [];
       eb.setFields(
         ...fields.map((f) => {
           if (f.name === 'Status') return { name: 'Status', value: f.value + ' - ' + latestStatus.title };
+          else if (f.name === 'Prompt') return { name: 'Original prompt', value: f.value };
           else return f;
         }),
-        { name: 'Pimped prompts', value: markdown }
+        ...markdowns.map((md, i) => ({ name: `Prompt ${i + 1}`, value: md }))
       );
     }
     return eb;
