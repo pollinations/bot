@@ -15,8 +15,8 @@ export async function executePollen(
   onUpdate: UpdateCallback
 ) {
   return new Promise(async (resolve, reject) => {
-    let timeout: NodeJS.Timeout | undefined;
-    let timedOut = false;
+    // let timeout: NodeJS.Timeout | undefined;
+    // let timedOut = false;
     try {
       const pollinator = POLLINATORS.find((p) => p.pollenId === pollenId);
       if (!pollinator) throw new Error(`No pollinator found for pollenId '${pollenId}'`);
@@ -34,15 +34,15 @@ export async function executePollen(
       let outputCidLogged = false;
 
       for await (const raw of runModelGenerator(params, pollinator.url)) {
-        if (timeout) clearTimeout(timeout);
-        if (timedOut) {
-          logger.warn(`received update after timeout`);
-          return;
-        }
-        timeout = setTimeout(() => {
-          timedOut = true;
-          reject(new Error('TIMEOUT'));
-        }, SESSION_TIMEOUT_IN_MS);
+        // if (timeout) clearTimeout(timeout);
+        // if (timedOut) {
+        //   logger.warn(`received update after timeout`);
+        //   return;
+        // }
+        // timeout = setTimeout(() => {
+        //   timedOut = true;
+        //   reject(new Error('TIMEOUT'));
+        // }, SESSION_TIMEOUT_IN_MS);
 
         counter = counter + 1;
         // input cid on first response
@@ -61,7 +61,7 @@ export async function executePollen(
     } catch (err) {
       reject(err);
     } finally {
-      if (timeout) clearTimeout(timeout);
+      // if (timeout) clearTimeout(timeout);
     }
   });
 }
