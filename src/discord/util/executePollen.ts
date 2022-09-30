@@ -6,7 +6,7 @@ import { ParsedPollinationsResponse, parsePollinationsResponse } from './parsePo
 import type { Logger } from 'pino';
 
 export type UpdateCallback = (parsedData: ParsedPollinationsResponse) => Promise<any>;
-const SESSION_TIMEOUT_IN_MS = 1000 * 60 * 30; // 20 minutes
+const SESSION_TIMEOUT_IN_MS = 1000 * 60 * 20; // 20 minutes
 const THROTTLE_INTERVAL_IN_MS = 5000;
 export async function executePollen(
   pollenId: string,
@@ -16,7 +16,7 @@ export async function executePollen(
 ) {
   return new Promise(async (resolve, reject) => {
     let timeout: NodeJS.Timeout | undefined;
-
+    let timedOut = false;
     try {
       const pollinator = POLLINATORS.find((p) => p.pollenId === pollenId);
       if (!pollinator) throw new Error(`No pollinator found for pollenId '${pollenId}'`);
@@ -35,13 +35,18 @@ export async function executePollen(
 
       for await (const raw of runModelGenerator(params, pollinator.url)) {
         if (timeout) clearTimeout(timeout);
+        if (timedOut) {
+          logger.warn(`received update after timeout`);
+          return;
+        }
         timeout = setTimeout(() => {
+          timedOut = true;
           reject(new Error('TIMEOUT'));
         }, SESSION_TIMEOUT_IN_MS);
 
         counter = counter + 1;
         // input cid on first response
-        if (raw.output?.success === false) throw Error('Failed pollen');
+        if (raw.output?.success === false) reject(Error('Failed pollen'));
         if (counter === 1) logger.info({ inputCid: raw.input_cid }, 'Got first response. IPFS Input is set up');
         if (!outputCidLogged && raw['.cid']) {
           // log outputCid only once as soon as it is available
