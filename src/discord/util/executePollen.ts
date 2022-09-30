@@ -6,7 +6,7 @@ import { ParsedPollinationsResponse, parsePollinationsResponse } from './parsePo
 import type { Logger } from 'pino';
 
 export type UpdateCallback = (parsedData: ParsedPollinationsResponse) => Promise<any>;
-
+const SESSION_TIMEOUT_IN_MS = 1000 * 60 * 30; // 20 minutes
 const THROTTLE_INTERVAL_IN_MS = 5000;
 export async function executePollen(
   pollenId: string,
@@ -14,39 +14,50 @@ export async function executePollen(
   logger: Logger,
   onUpdate: UpdateCallback
 ) {
-  try {
-    const pollinator = POLLINATORS.find((p) => p.pollenId === pollenId);
-    if (!pollinator) throw new Error(`No pollinator found for pollenId '${pollenId}'`);
-    logger.info({ pollenId, params, pollinator: pollinator.url }, 'Executing pollen');
+  return new Promise(async (resolve, reject) => {
+    let timeout: NodeJS.Timeout | undefined;
 
-    // throttled update of response
-    const updateResponse = _.throttle(async (raw: Data) => {
-      let parsed = parsePollinationsResponse(raw);
-      logger.debug({ outputCid: parsed.outputCid }, 'Updating response');
-      await onUpdate(parsed);
-    }, THROTTLE_INTERVAL_IN_MS);
+    try {
+      const pollinator = POLLINATORS.find((p) => p.pollenId === pollenId);
+      if (!pollinator) throw new Error(`No pollinator found for pollenId '${pollenId}'`);
+      logger.info({ pollenId, params, pollinator: pollinator.url }, 'Executing pollen');
 
-    // main execution loop
-    let counter = 0;
-    let outputCidLogged = false;
-    for await (const raw of runModelGenerator(params, pollinator.url)) {
-      counter = counter + 1;
-      // input cid on first response
-      if (raw.output?.success === false) throw Error('Failed pollen');
-      if (counter === 1) logger.info({ inputCid: raw.input_cid }, 'Got first response. IPFS Input is set up');
-      if (!outputCidLogged && raw['.cid']) {
-        // log outputCid only once as soon as it is available
-        outputCidLogged = true;
-        logger.info({ outputCid: raw['.cid'] }, 'Pollination started');
+      // throttled update of response
+      const updateResponse = _.throttle(async (raw: Data) => {
+        let parsed = parsePollinationsResponse(raw);
+        logger.debug({ outputCid: parsed.outputCid }, 'Updating response');
+        await onUpdate(parsed);
+      }, THROTTLE_INTERVAL_IN_MS);
+
+      // main execution loop
+      let counter = 0;
+      let outputCidLogged = false;
+
+      for await (const raw of runModelGenerator(params, pollinator.url)) {
+        if (timeout) clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          reject(new Error('TIMEOUT'));
+        }, SESSION_TIMEOUT_IN_MS);
+
+        counter = counter + 1;
+        // input cid on first response
+        if (raw.output?.success === false) throw Error('Failed pollen');
+        if (counter === 1) logger.info({ inputCid: raw.input_cid }, 'Got first response. IPFS Input is set up');
+        if (!outputCidLogged && raw['.cid']) {
+          // log outputCid only once as soon as it is available
+          outputCidLogged = true;
+          logger.info({ outputCid: raw['.cid'] }, 'Pollination started');
+        }
+        logger.debug(`[it ${counter}]: received data from backend`);
+        await updateResponse(raw);
       }
-      logger.debug(`[it ${counter}]: received data from backend`);
-      await updateResponse(raw);
+      logger.info({ iterations: counter }, 'Pollination finished successfully');
+      resolve(true);
+    } catch (err) {
+      reject(err);
+    } finally {
+      if (timeout) clearTimeout(timeout);
     }
-
-    logger.info({ iterations: counter }, 'Pollination finished successfully');
-    return;
-  } catch (err) {
-    logger.error(err, 'Unhandled exception while executing event');
-    throw err;
-  }
+  });
 }
+let t;

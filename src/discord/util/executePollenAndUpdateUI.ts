@@ -47,10 +47,13 @@ export const executePollenAndUpdateUI = async (
       response.edit({ embeds: [mainEmbed, ...imageEmbeds], files });
     };
     await executePollen(pollen.id, params, iOrMsg.logger, handleUpdate);
-  } catch (err) {
+  } catch (err: any) {
+    iOrMsg.logger.error(err, 'Unhandled exception while executing event');
+
     if (response) {
+      const overrideErrorStatus = err.message === 'TIMEOUT' ? 'The pollen timed out' : undefined;
       const { mainEmbed, imageEmbeds } = buildDefaultResponsePayload(
-        { ...staticEmbedOptions, statusCode: 3 },
+        { ...staticEmbedOptions, statusCode: 3, statusMessage: overrideErrorStatus },
         lastUpdate,
         pollenEmbedModifier
       );

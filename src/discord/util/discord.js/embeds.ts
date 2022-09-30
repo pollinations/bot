@@ -57,10 +57,11 @@ export interface MainEmbedOptions {
   statusCode?: keyof typeof STATUS;
   thumbnailUrl?: string | undefined;
   description?: string | undefined;
+  statusMessage?: string | undefined;
   fields?: { label: string; value: string }[];
 }
 export const buildMainEmbed = (options: MainEmbedOptions) => {
-  const { title, url, description, fields, prompt, statusCode = 0, thumbnailUrl } = options;
+  const { title, url, description, fields, prompt, statusCode = 0, statusMessage } = options;
   let status = STATUS[statusCode];
   const promptValue = prompt && (prompt.length > 1024 ? prompt.slice(0, 1021) + '...' : prompt);
   // const imageLinks =
@@ -76,7 +77,7 @@ export const buildMainEmbed = (options: MainEmbedOptions) => {
 
   if (fields) eb.addFields(fields.map(({ label, value }) => ({ name: label, value })));
   if (promptValue) eb.addFields([{ name: 'Prompt', value: promptValue }]);
-  eb.addFields([{ name: 'Status', value: status.label, inline: true }]).setTimestamp();
+  eb.addFields([{ name: 'Status', value: statusMessage || status.label, inline: true }]).setTimestamp();
   return eb;
 };
 export function createImageEmbed(title: string, imageUrl: string, url?: string) {
