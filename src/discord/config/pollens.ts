@@ -237,11 +237,11 @@ export const POLLENS: PollenDefinition[] = [
     ],
     outputs: [
       {
-        type: 'image',
-        filename: 'z_3dphoto_out.mp4'
+        type: 'image'
       },
       {
-        type: 'video'
+        type: 'video',
+        lastXFiles: 1
       }
     ]
   },
