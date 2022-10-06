@@ -248,7 +248,7 @@ export const POLLENS: PollenDefinition[] = [
   {
     id: 'pimped-diffusion',
     displayName: 'Pimped Diffusion',
-    description: 'Pimps the prompt using GPT-3 and runs Stable Diffusion on the pimped prompts.',
+    description: 'Pimps the prompt and runs Stable Diffusion on the pimped prompts.',
     thumbnailUrl: 'https://ipfs.pollinations.ai/ipfs/QmVDhv4XjHJgH8NoXgJi1hfY87VfWdiJUxnWt5zHbhkaGW?filename=00003.png',
     model: 'pimped-diffusion',
     params: [
