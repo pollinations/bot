@@ -1,7 +1,7 @@
 import { TwitterApi } from 'twitter-api-v2';
 //import SocialPost from "social-post-api";
 import runModel from "@pollinations/ipfs/awsPollenRunner.js";
-import pollenStore from "@pollinations/ipfs/pollenStore.js";
+import pollenStore from "@pollinations/ipfs/keyValueStore.js";
 import fetch from "node-fetch";
 import readline from "readline-sync";
 import credentials from "./credentials.js";
@@ -189,7 +189,7 @@ async function createBioPortrait(userId) {
     const {data:user} = await twitter.user(userId, {"user.fields":"description"});
     console.log("user", user)
     return await createImageForMention({author_id: userId, 
-      text: `Avatar for ${user.name} ${user.description}`,
+      text: `Conceptual artwork of ${user.name} ${user.description}.`,
       //text: `a stunning portrait photo of ${user.name} ${user.description}. By Steve McCurry `,
         tweetText: `"Portrait of ${user.name} ${user.description}". \n\n#myAIportrait`})
 }
@@ -235,4 +235,4 @@ async function processBios() {
 
 processBios()
 
-processMentions() 
+processMentions()
