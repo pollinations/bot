@@ -151,7 +151,7 @@ async function createImageForMention({author_id, text, tweetText=null, id: tweet
 
 
     // limit text to 240 characters
-    tweetText = tweetText.substring(0, 240);
+    tweetText = tweetText.substring(0, 200);
 
     const finalTweetText = `${mentionName} ${tweetText} #aiart #pollinations`;
 
@@ -223,9 +223,14 @@ async function processBios() {
             //await writeIdToRecord(follower.id)
             //const response = readline.question("create portrait?")
             //if (response ==="yes")
+            try {
             const success = await createBioPortrait(follower.id)
             if (success)
               await writeIdToRecord(follower.id)
+            } catch (e) {
+                console.error("error when trying to create portrait", e);
+                console.trace();
+            }
         }
         //console.log("NEXT!!!")
         //await timeline.fetchNext()
