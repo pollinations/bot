@@ -14,10 +14,7 @@ const promptPimpers = [
 ]
 
 const items = [
-"with a halo",
-"wearing nerd glasses",
-"with a moustache",
-"with an astronaut helmet"]
+]
 
 const animals = [
 "a wolf",
@@ -25,9 +22,14 @@ const animals = [
 "a gorilla"]
 
 const characteristics = [
-"an adventurer's outfit",
-"a sporty outfit",
-"a hipster outfit"
+"Boy-scout. With an adventurer's outfit.",
+"Hipster. With a trendy outfit. Beard.",
+"Preacher. With clerical clothing. Robe.",
+"Holy angel. With a halo. Wings.",
+"Sporty. With a tracksuit.",
+"Nerd. Wearing glasses. Studious. Bookworm. With a backpack.",
+"Astronaut. With an astronaut's helmet. Spacesuit.",
+"Italian chef. With a moustache. Chef's hat.",
 ]
 
 
@@ -54,7 +56,7 @@ async function createImages(prompts) {
 }
 
 
-async function getImage(prompts, initImage=undefined) {
+async function getImage(prompts, initImage=undefined, save_prompt=undefined) {
 
     const inputs = {
         prompts: prompts.join("\n"),
@@ -62,10 +64,10 @@ async function getImage(prompts, initImage=undefined) {
         num_frames_per_prompt: 1,
         diffusion_steps: -50,
         prompt_scale: 15,
-        width: 512,
+        width: 384,
         height: 512,
         init_image: initImage,
-        init_image_strength: 0.35
+        init_image_strength: 0.05
     };
 
     console.log("inputs", inputs);
@@ -103,12 +105,12 @@ async function getImage(prompts, initImage=undefined) {
 
         const filenamePrefix = initImage.split("=")[1];
         // save to path with the prompt as filename
-        const path = `./images/${filenamePrefix}-${prompt.slice(0,200)}.png`;
+        const path = `./images2/${filenamePrefix}-${save_prompt}.png`;
         
         console.log("saving to", path)
         
         // create path if it doesn't exist
-        fs.mkdirSync("./images", { recursive: true });
+        fs.mkdirSync("./images2", { recursive: true });
 
     
         fs.writeFileSync(path, buffer);
@@ -129,22 +131,20 @@ async function getImage(prompts, initImage=undefined) {
 //  createImages(prompts)
 
 const getCharacters = async () => {
-    const characterData = await IPFSWebState("QmcBUEDUkV6guPZEZgEfNE5PksHeFsF8SnizL95VcBUw8S")
+    const characterData = await IPFSWebState("QmTQ7QMW6rhsBXviDZsKvYUQdwTgNUsZsQK5xJXdmdufnv")
     console.log("characters", characterData)
-    const animals = Object.keys(characterData)
+    const animalImages = Object.keys(characterData)
     console.log("characterNames", animals)
-    for (const animal of animals) {
+    for (const animal of animalImages) {
         const initImages = Object.values(characterData[animal])
         for (const initImage of initImages) {
-            for (const item of items) {
                 for (const characteristic of characteristics) {
                     for (const promptPimper of promptPimpers) {
-                        const prompt = promptPimper(`a ${animal} wearing ${characteristic} ${item}`)
+                        const prompt = promptPimper(`${animal}. ${characteristic}`)
                         console.log(prompt, initImage)
-                        await getImage([prompt], initImage)
+                        await getImage([prompt], initImage,  `${animal} ${characteristic}`)
                     }
                 }
-            }
         }
     }
     console.log(prompts)
