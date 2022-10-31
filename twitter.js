@@ -240,4 +240,4 @@ async function processBios() {
 
 processBios()
 
-processMentions()
+// processMentions()
